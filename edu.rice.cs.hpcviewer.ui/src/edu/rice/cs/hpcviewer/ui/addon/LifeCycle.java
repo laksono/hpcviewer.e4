@@ -13,6 +13,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.model.application.MApplication;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.lifecycle.PostContextCreate;
 import org.eclipse.e4.ui.workbench.lifecycle.PreSave;
 import org.eclipse.e4.ui.workbench.lifecycle.ProcessAdditions;
@@ -22,9 +24,11 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import edu.rice.cs.hpcviewer.ui.resources.IconManager;
 import edu.rice.cs.hpcviewer.ui.util.ApplicationProperty;
+import edu.rice.cs.hpcviewer.ui.util.IConstants;
 import edu.rice.cs.hpcviewer.ui.util.Utilities;
 
 @Creatable
@@ -100,7 +104,14 @@ public class LifeCycle
 	}
 
 	@ProcessAdditions
-	void processAdditions(IEclipseContext workbenchContext) {
+	void processAdditions(IEclipseContext workbenchContext, MApplication app, EModelService modelService) {
+	    MTrimmedWindow window = (MTrimmedWindow)modelService.find(IConstants.ID_MAIN_WINDOW, app);
+		Rectangle screen = Display.getCurrent().getPrimaryMonitor().getClientArea();
+		
+		int x = (int) ((screen.width  - window.getWidth())  * 0.5);
+		int y = (int) ((screen.height - window.getHeight()) * 0.5);
+		window.setX(x);
+		window.setY(y);
 	}
 
 	@ProcessRemovals

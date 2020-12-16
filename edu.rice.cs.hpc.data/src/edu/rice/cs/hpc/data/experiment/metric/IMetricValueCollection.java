@@ -23,14 +23,15 @@ public interface IMetricValueCollection
 	 * get a metric value of a given metric index. To keep compatibility, this index
 	 * is not the ID of the metric, but the index of the dense metrics.
 	 * The derived class needs to covert from metric index to ID manually.
-	 * @param index of the metric (not the metric ID)
-	 * @return
+	 * @param scope Scope
+	 * @param index of the metric (the metric ID)
+	 * @return MetricValue
 	 */
 	public MetricValue getValue(Scope scope, int index);
 	
 	/***
 	 * get the annotation of a given metric index
-	 * @param index
+	 * @param index the metric index
 	 * @return
 	 */
 	public float getAnnotation(int index);
@@ -38,14 +39,14 @@ public interface IMetricValueCollection
 	/****
 	 * set a metric value to a certain index
 	 * 
-	 * @param index
+	 * @param index metric index
 	 * @param value
 	 */
 	public void setValue(int index, MetricValue value);
 	
 	/*****
 	 * add an additional annotation to the metric value
-	 * @param index
+	 * @param index the metric index
 	 * @param ann
 	 */
 	public void setAnnotation(int index, float ann);
