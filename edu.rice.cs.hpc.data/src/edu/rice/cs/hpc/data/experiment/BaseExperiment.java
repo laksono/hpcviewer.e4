@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.EnumMap;
 import java.util.Map;
 
+import org.eclipse.collections.api.list.MutableList;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -53,6 +54,9 @@ public abstract class BaseExperiment implements IExperiment
 	private int filterNumScopes = 0, filterStatus;
 
 	private BaseTraceAttribute traceAttribute = new TraceAttribute();
+
+	public int min_cctid, max_cctid;
+	private MutableList<Scope> listOfScopes;
 
 	/***
 	 * the root scope of the experiment
@@ -372,21 +376,31 @@ public abstract class BaseExperiment implements IExperiment
 	
 	public void setMinMaxCCTID(int min, int max)
 	{
-		traceAttribute.min_cctid = min;
-		traceAttribute.max_cctid = max;
+		min_cctid = min;
+		max_cctid = max;
 	}
 	
 	public int getMinCCTID()
 	{
-		return traceAttribute.min_cctid;
+		return min_cctid;
 	}
 	
 	public int getMaxCCTID()
 	{
-		return traceAttribute.max_cctid;
+		return max_cctid;
 	}
 	
 	
+	public MutableList<Scope> getListOfScopes() {
+		return listOfScopes;
+	}
+
+
+	public void setListOfScopes(MutableList<Scope> listOfScopes) {
+		this.listOfScopes = listOfScopes;
+	}
+
+
 	/******
 	 * set the trace attributes (if the tracefile exist)
 	 * @param attribute

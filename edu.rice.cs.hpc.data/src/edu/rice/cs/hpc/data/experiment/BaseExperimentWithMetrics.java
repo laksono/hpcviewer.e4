@@ -128,7 +128,8 @@ implements IMetricManager
 	}
 
 	/*************************************************************************
-	 *	Returns the metric with a given index.
+	 * Returns the metric with a given index.
+	 * @param index the metric id (not the metric order)
 	 ************************************************************************/
 	public BaseMetric getMetric(int index)
 	{		

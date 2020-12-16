@@ -590,7 +590,7 @@ public MetricValue getMetricValue(BaseMetric metric)
 /***************************************************************************
   overload the method to take-in the index ---FMZ
  ***************************************************************************/
-
+@Override
 public MetricValue getMetricValue(int index)
 {
 	ensureMetricStorage();
@@ -599,6 +599,7 @@ public MetricValue getMetricValue(int index)
     return value;
 }
 
+@Override
 public MetricValue getRootMetricValue(BaseMetric metric)
 {
 	return getRootScope().getMetricValue(metric);
@@ -607,6 +608,7 @@ public MetricValue getRootMetricValue(BaseMetric metric)
 /*************************************************************************
  *	Sets the value of a given metric at this scope.
  ************************************************************************/
+@Override
 public void setMetricValue(int index, MetricValue value)
 {
 	ensureMetricStorage();
@@ -638,7 +640,7 @@ public void accumulateMetric(Scope source, int src_i, int targ_i, MetricValuePro
 }
 
 /*************************************************************************
- * Laks: accumulate a metric value (used to compute aggregate value)
+ * Accumulate a metric value (used to compute aggregate value)
  * @param index
  * @param value
  ************************************************************************/

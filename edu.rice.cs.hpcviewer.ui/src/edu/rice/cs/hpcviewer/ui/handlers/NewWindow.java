@@ -8,16 +8,16 @@ import org.eclipse.e4.ui.model.application.ui.basic.MTrimmedWindow;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 
 import edu.rice.cs.hpcviewer.ui.addon.DatabaseCollection;
+import edu.rice.cs.hpcviewer.ui.util.IConstants;
 
 public class NewWindow 
 {
-	static public final String ID_WINDOW = "edu.rice.cs.hpcviewer.window.main";
 	
 	@Inject DatabaseCollection database;
 	
 	@Execute
 	public void createWindow(EModelService modelService, MApplication app) {
-		  MTrimmedWindow newWin = (MTrimmedWindow)modelService.cloneSnippet(app, "edu.rice.cs.hpcviewer.ui.trimmedwindow.main", null);
+		  MTrimmedWindow newWin = (MTrimmedWindow)modelService.cloneSnippet(app, IConstants.ID_SNIPPET_WINDOW, null);
 
 		  app.getChildren().add(newWin);
 	}

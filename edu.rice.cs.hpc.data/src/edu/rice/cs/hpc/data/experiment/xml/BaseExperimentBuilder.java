@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.eclipse.collections.api.list.MutableList;
+import org.eclipse.collections.impl.factory.Lists;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentConfiguration;
@@ -101,6 +103,7 @@ public class BaseExperimentBuilder extends Builder {
 	private int current_depth = 0;
 	
 	private boolean removeInvisibleProcedure = false;
+	private MutableList<Scope> listOfScope;
 	
 	//=============================================================
 	
@@ -131,6 +134,7 @@ public class BaseExperimentBuilder extends Builder {
 		statusProcedureMap  = new HashMap<Integer, Integer>();
 		
 		mapCpidToCallpath   = new HashMap<>();
+		listOfScope = Lists.mutable.empty();
 		
 		// parse action data structures
 		this.scopeStack   = new Stack<Scope>();
@@ -1202,6 +1206,7 @@ public class BaseExperimentBuilder extends Builder {
 		
 		min_cctid = Math.min(min_cctid, scope.getCCTIndex());
 		max_cctid = Math.max(max_cctid, scope.getCCTIndex());
+		listOfScope.add(scope);
 		
 		if (scope instanceof RootScope) {
 			rootStack.push((RootScope)scope);
@@ -1326,6 +1331,7 @@ public class BaseExperimentBuilder extends Builder {
 		experiment.setConfiguration(this.configuration);
 		experiment.setRootScope(this.rootScope);
 		experiment.setMinMaxCCTID(min_cctid, max_cctid);
+		experiment.setListOfScopes(listOfScope);
 		
 		// supply defaults for missing info
 		if( this.configuration.getName(ExperimentConfiguration.NAME_EXPERIMENT) == null )

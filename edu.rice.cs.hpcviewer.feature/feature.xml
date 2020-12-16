@@ -31,20 +31,7 @@
       <import plugin="org.eclipse.e4.core.di.extensions"/>
       <import plugin="org.eclipse.e4.ui.workbench.swt"/>
       <import plugin="org.eclipse.core.expressions"/>
-      <import plugin="org.eclipse.e4.core.commands"/>
       <import plugin="org.eclipse.osgi"/>
-      <import plugin="org.eclipse.equinox.common"/>
-      <import plugin="javax.xml"/>
-      <import plugin="org.apache.xml.resolver"/>
-      <import plugin="org.apache.xml.serializer"/>
-      <import plugin="org.eclipse.text"/>
-      <import plugin="org.eclipse.jface"/>
-      <import plugin="org.eclipse.emf.common"/>
-      <import plugin="org.eclipse.equinox.preferences"/>
-      <import plugin="org.eclipse.core.jobs"/>
-      <import plugin="org.eclipse.equinox.registry"/>
-      <import plugin="org.slf4j.api" match="equivalent"/>
-      <import plugin="org.eclipse.core.commands"/>
    </requires>
 
    <plugin
@@ -271,5 +258,17 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
+
+   <plugin
+         id="org.eclipse.collections"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.eclipse.nebula.nattable"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
 
 </feature>

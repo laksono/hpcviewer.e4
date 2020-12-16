@@ -12,8 +12,6 @@ public class BaseTraceAttribute
 	public long dbUnitTime;
 	public long dbTimeMin;
 	public long dbTimeMax;
-
-	public int min_cctid, max_cctid;
 	
 	public int maxDepth;
 

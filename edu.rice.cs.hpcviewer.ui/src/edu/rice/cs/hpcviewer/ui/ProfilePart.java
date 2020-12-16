@@ -35,6 +35,7 @@ import edu.rice.cs.hpcviewer.ui.graph.GraphEditorInput;
 import edu.rice.cs.hpcviewer.ui.graph.GraphHistoViewer;
 import edu.rice.cs.hpcviewer.ui.graph.GraphPlotRegularViewer;
 import edu.rice.cs.hpcviewer.ui.graph.GraphPlotSortViewer;
+import edu.rice.cs.hpcviewer.ui.nattable.NatTopDownView;
 import edu.rice.cs.hpcviewer.ui.parts.bottomup.BottomUpView;
 import edu.rice.cs.hpcviewer.ui.parts.datacentric.Datacentric;
 import edu.rice.cs.hpcviewer.ui.parts.editor.Editor;
@@ -277,6 +278,8 @@ public class ProfilePart implements IProfilePart
 			
 			if (root.getType() == RootScopeType.CallingContextTree) {
 				views[numViews] = new TopDownView(tabFolderBottom, SWT.NONE);
+				AbstractBaseViewItem avi = new NatTopDownView(tabFolderBottom, SWT.NONE);
+				avi.setInput(root);
 				
 			} else if (root.getType() == RootScopeType.CallerTree) {
 				views[numViews] = new BottomUpView(tabFolderBottom, SWT.NONE);

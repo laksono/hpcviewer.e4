@@ -39,10 +39,13 @@ Require-Bundle: edu.rice.cs.hpc.data,
  org.eclipse.osgi.services,
  edu.rice.cs.hpcsetting,
  edu.rice.cs.hpctoolcontrol,
- edu.rice.cs.hpclog
+ edu.rice.cs.hpclog,
+ org.eclipse.collections,
+ org.eclipse.nebula.nattable
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Provide-Capability: licensing.feature;licensing.feature="edu.rice.cs.hpcviewer.ui.product"
-Import-Package: javax.annotation;version="1.0.0";resolution:=optional,
+Import-Package: ca.odell.glazedlists,
+ javax.annotation;version="1.0.0";resolution:=optional,
  javax.inject;version="1.0.0"
 Automatic-Module-Name: edu.rice.cs.hpcviewer.ui
