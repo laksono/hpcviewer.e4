@@ -34,6 +34,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
@@ -61,11 +62,19 @@ public class NatTopDownView extends AbstractBaseViewItem
 	private ProfilePart   profilePart;
 	
 	private NatTable natTable;
-	private Composite parent;
+	private Composite container;
+	private final CTabFolder parent;
 	
 	public NatTopDownView(CTabFolder parent, int style) {
 		super(parent, style);
 		this.parent = parent;
+		this.container = new Composite(parent, SWT.NONE);
+		GridDataFactory.fillDefaults().grab(true, true).applyTo(this.container);
+		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(this.container);
+		
+		Label lbl = new Label(this.container, SWT.BORDER);
+		lbl.setText("Test test test test test");
+		
 		setText("Top down table");
 	}
 
@@ -108,7 +117,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 		GridLayer gridLayer = new GridLayer(bodyLayer, columnHeaderLayer, rowHeaderLayer, cornerLayer);
 		
-		natTable = new NatTable(parent, gridLayer, false);
+		natTable = new NatTable(container, gridLayer, false);
 		
 
         // create a new ConfigRegistry which will be needed for GlazedLists
@@ -125,6 +134,8 @@ public class NatTopDownView extends AbstractBaseViewItem
 
         GridDataFactory.fillDefaults().grab(true, true).applyTo(natTable);
         GridLayoutFactory.fillDefaults().numColumns(1).applyTo(natTable);
+        
+        setControl(container);
 	}
 
 	@Override
@@ -224,10 +235,12 @@ public class NatTopDownView extends AbstractBaseViewItem
 	
 	static private class TreeDataProvider implements IDataProvider
 	{
-		final private RootScope root;
+		private final RootScope root;
+		private final List<BaseMetric> metrics;
 		
 		public TreeDataProvider(RootScope root) {
 			this.root = root;
+			metrics = ((Experiment)root.getExperiment()).getVisibleMetrics();
 		}
 		
 		@Override
@@ -238,7 +251,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 				return scope;
 			if (scope == null)
 				return null;
-			BaseMetric metric = experiment.getMetric(rowIndex-1);
+			BaseMetric metric = metrics.get(columnIndex-1);
 			MetricValue mv = scope.getMetricValue(metric);
 			return mv;
 		}
@@ -252,14 +265,13 @@ public class NatTopDownView extends AbstractBaseViewItem
 			if (scope == null)
 				return;
 			
-			BaseMetric metric = experiment.getMetric(rowIndex-1);
+			BaseMetric metric = metrics.get(columnIndex-1);
 			scope.setMetricValue(metric.getIndex(), (MetricValue)newValue);
 		}
 
 		@Override
 		public int getColumnCount() {
-			Experiment experiment = (Experiment) root.getExperiment();
-			return 1+experiment.getMetricCount();
+			return 1+metrics.size();
 		}
 
 		@Override
@@ -279,30 +291,37 @@ public class NatTopDownView extends AbstractBaseViewItem
 	 */
 	static private class ColumnDataProvider implements IDataProvider
 	{
-		private final Experiment experiment;
+		private final List<BaseMetric> metrics;
 		
 		public ColumnDataProvider(Experiment experiment) {
-			this.experiment = experiment;
+			metrics = experiment.getVisibleMetrics();
 		}
 
 		@Override
 		public Object getDataValue(int columnIndex, int rowIndex) {
-			if (columnIndex < 0 && columnIndex > experiment.getMetricCount()+1)
+
+			if (columnIndex < 0 && columnIndex > getColumnCount())
 				return null;
+			
 			if (columnIndex == 0)
 				return "Scope";
-			return experiment.getMetric(columnIndex-1).getDisplayName();
+
+			if (metrics == null)
+				return null;
+
+			return metrics.get(columnIndex-1);
 		}
 
 		@Override
 		public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
-			// TODO Auto-generated method stub
-			
+			if (columnIndex>metrics.size()) {
+				metrics.add((BaseMetric) newValue);
+			}
 		}
 
 		@Override
 		public int getColumnCount() {
-			return experiment.getMetricCount()+1;
+			return metrics.size()+1;
 		}
 
 		@Override
@@ -334,8 +353,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 		@Override
 		public int getRowCount() {
-			return experiment.getMaxCCTID() - experiment.getMinCCTID() + 1;
+			return experiment.getListOfScopes().size();
 		}
-		
 	}
 }
