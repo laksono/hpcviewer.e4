@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry exported="true" kind="lib" path="ca.odell.glazedlists.source_1.9.0.v201303080712.jar"/>
+	<classpathentry exported="true" kind="lib" path="ca.odell.glazedlists_1.9.0.v201303080712.jar" sourcepath="ca.odell.glazedlists.source_1.9.0.v201303080712.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.apache.commons.codec_1.6.0.v201305230611.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.apache.commons.logging_1.1.1.v201101211721.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.apache.poi.source_3.9.0.v201405241750.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.apache.poi_3.9.0.v201405241750.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.cwt_1.1.0.201907151344.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.cdatetime_1.4.0.201907151344.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.core.source_1.6.0.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.core_1.6.0.201909181823.jar" sourcepath="org.eclipse.nebula.widgets.nattable.core.source_1.6.0.201909181823.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.eclipse.nebula.nattable/org.eclipse.nebula.widgets.nattable.core.source_1.6.0.201909181823.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.e4.source_1.2.0.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.e4_1.2.0.201909181823.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.eclipse.nebula.nattable/org.eclipse.nebula.widgets.nattable.extension.e4.source_1.2.0.201909181823.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.glazedlists.source_1.6.0.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.glazedlists_1.6.0.201909181823.jar" sourcepath="org.eclipse.nebula.widgets.nattable.extension.glazedlists.source_1.6.0.201909181823.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.eclipse.nebula.nattable/org.eclipse.nebula.widgets.nattable.extension.glazedlists.source_1.6.0.201909181823.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.nebula.source_1.2.0.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.nebula_1.2.0.201909181823.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="jar:platform:/resource/org.eclipse.nebula.nattable/org.eclipse.nebula.widgets.nattable.extension.nebula.source_1.2.0.201909181823.jar!/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.poi.source_1.5.1.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.nattable.extension.poi_1.5.1.201909181823.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.richtext.source_1.3.0.201907151344.jar"/>
+	<classpathentry exported="true" kind="lib" path="org.eclipse.nebula.widgets.richtext_1.3.0.201907151344.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
