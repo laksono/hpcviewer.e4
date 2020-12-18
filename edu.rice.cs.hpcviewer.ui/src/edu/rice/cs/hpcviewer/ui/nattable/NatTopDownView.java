@@ -1,6 +1,7 @@
 package edu.rice.cs.hpcviewer.ui.nattable;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -34,8 +35,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.SortedList;
@@ -46,6 +45,7 @@ import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
+import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.ScopeComparator;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
@@ -54,6 +54,7 @@ import edu.rice.cs.hpcviewer.ui.tabItems.AbstractBaseViewItem;
 
 public class NatTopDownView extends AbstractBaseViewItem 
 {
+	private final static String TITLE_TOP_DOWN = "Top-down view";
 	
 	private EPartService  partService;	
 	private IEventBroker  eventBroker;
@@ -63,19 +64,17 @@ public class NatTopDownView extends AbstractBaseViewItem
 	
 	private NatTable natTable;
 	private Composite container;
-	private final CTabFolder parent;
+
 	
 	public NatTopDownView(CTabFolder parent, int style) {
 		super(parent, style);
-		this.parent = parent;
+
 		this.container = new Composite(parent, SWT.NONE);
 		GridDataFactory.fillDefaults().grab(true, true).applyTo(this.container);
 		GridLayoutFactory.fillDefaults().numColumns(1).applyTo(this.container);
 		
-		Label lbl = new Label(this.container, SWT.BORDER);
-		lbl.setText("Test test test test test");
-		
-		setText("Top down table");
+		setText(TITLE_TOP_DOWN);
+		setToolTipText("A view to display the calling context tree (CCT) of the profile data");
 	}
 
 	@Override
@@ -107,7 +106,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 		
         // build the row header layer
         IDataProvider rowHeaderDataProvider = new TreeRowHeaderDataProvider((Experiment) root.getExperiment());
-        DataLayer rowDataHeaderLayer = new DefaultRowHeaderDataLayer(columnHeaderDataProvider);
+        DataLayer rowDataHeaderLayer = new DefaultRowHeaderDataLayer(rowHeaderDataProvider);
         ILayer rowHeaderLayer = new RowHeaderLayer(rowDataHeaderLayer, bodyLayer, bodyLayer.getSelectionLayer());
 
         // build the corner layer
@@ -143,6 +142,22 @@ public class NatTopDownView extends AbstractBaseViewItem
 		return null;
 	}
 	
+	
+	static private class ScopeExpansionModel implements TreeList.ExpansionModel<Scope>
+	{
+
+		@Override
+		public boolean isExpanded(Scope element, List<Scope> path) {
+			if (element instanceof RootScope)
+				return true;
+			
+			return false;
+		}
+
+		@Override
+		public void setExpanded(Scope element, List<Scope> path, boolean expanded) {}
+	}
+	
 	static private class BodyLayerTopDown extends AbstractLayerTransform 
 	{
         private final SelectionLayer selectionLayer;
@@ -166,7 +181,7 @@ public class NatTopDownView extends AbstractBaseViewItem
             TreeList.Format<Scope> treeFormat = new TreeScopeFormat();
             
             // wrap the SortedList with the TreeList
-            treeList = new TreeList<Scope>(sortedList, treeFormat, TreeList.NODES_START_EXPANDED);
+            treeList = new TreeList<Scope>(sortedList, treeFormat, new ScopeExpansionModel());
 
 			dataProvider = new TreeDataProvider(root);
             selectionLayer = new SelectionLayer( new DataLayer(dataProvider) );
@@ -202,20 +217,30 @@ public class NatTopDownView extends AbstractBaseViewItem
 	{
 		private ScopeComparator comparator;
 
+		public void setMetric(BaseMetric metric) {
+			comparator.setMetric(metric);
+		}
+		
 		@Override
 		public void getPath(List<Scope> path, Scope element) {
 			if (element == null)
 				return;
+
+			path.add(element);
 			
 			Scope current = element;
 			while(current != null && current.getParentScope() != null) {
 				Scope parent = current.getParentScope();
-				if (!(parent instanceof RootScope)) {
-					path.add(parent);
+				if (parent instanceof RootScope) {
+					if (((RootScope)parent).getType() == RootScopeType.Invisible) {
+						current = parent;
+						continue;
+					}
 				}
+				path.add(parent);
 				current = parent;
 			}
-            path.add(element);
+            Collections.reverse(path);
 		}
 
 		@Override
