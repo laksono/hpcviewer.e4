@@ -89,7 +89,7 @@ public class BaseMetricLabelProvider extends ColumnLabelProvider implements IMet
 			Object input = treeViewer.getInput();
 			if (input != null && input instanceof Scope) {
 				if (((Scope)input).getChildAt(0) == element) {
-					return ColorManager.getColorTopRow();
+					return ColorManager.getColorTopRow(treeViewer.getControl());
 				}
 			}
 		}

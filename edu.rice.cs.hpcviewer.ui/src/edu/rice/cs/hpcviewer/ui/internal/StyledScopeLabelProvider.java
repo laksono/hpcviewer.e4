@@ -97,7 +97,7 @@ public class StyledScopeLabelProvider extends DelegatingStyledCellLabelProvider
 		public Color getBackground(Object element) {
 			Scope input = (Scope) treeViewer.getInput();
 			if (input != null && input.getChildAt(0) == element)
-				return ColorManager.getColorTopRow();
+				return ColorManager.getColorTopRow(treeViewer.getControl());
 			return null;
 		}
 
