@@ -36,7 +36,7 @@ public class ColorManager
 		RGB rgb = new RGB(rgbBackground.red, 
 						  rgbBackground.green, 
 						  Math.abs(rgbBackground.blue  - CONTRAST_COLOR));
-		Color topColor = new Color(rgb);
+		Color topColor = new Color(parent.getDisplay(), rgb);
 		registry.put(COLOR_TOP, rgb);
 		
 		return topColor;
