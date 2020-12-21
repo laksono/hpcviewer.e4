@@ -26,7 +26,7 @@ public class TimeZoomIn
 		}
 		TracePart traceView   = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
-		return actions.canTimeZoomIn();
+		return (actions != null ? actions.canTimeZoomIn() : false);
 	}
 		
 }

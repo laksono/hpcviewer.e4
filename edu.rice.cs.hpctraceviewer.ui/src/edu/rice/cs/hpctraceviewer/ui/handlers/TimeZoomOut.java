@@ -26,7 +26,7 @@ public class TimeZoomOut
 		}
 		TracePart traceView   = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
-		return actions.canTimeZoomOut();
+		return (actions != null ? actions.canTimeZoomOut() : false);
 	}
 		
 }
