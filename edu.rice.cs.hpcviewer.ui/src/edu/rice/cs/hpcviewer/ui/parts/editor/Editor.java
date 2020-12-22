@@ -114,6 +114,12 @@ public class Editor extends CTabItem implements IUpperPart, IPropertyChangeListe
 	}
 	
 	
+	@Override
+	public void dispose() {
+		ViewerPreferenceManager.INSTANCE.getPreferenceStore().removePropertyChangeListener(this);
+		super.dispose();
+	}
+	
 	public boolean hasEqualInput(Object input) {
 		if (input == null) return false;
 		
@@ -296,7 +302,9 @@ public class Editor extends CTabItem implements IUpperPart, IPropertyChangeListe
 
 		if (property.equals(PreferenceConstants.ID_FONT_TEXT)) {
 			StyledText text = textViewer.getTextWidget();
-
+			if (text == null)
+				return;
+			
 			Font font = FontManager.getTextEditorFont();
 			text.setFont(font);
 			
