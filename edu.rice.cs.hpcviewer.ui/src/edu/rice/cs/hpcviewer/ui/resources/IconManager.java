@@ -34,10 +34,10 @@ public class IconManager  extends BaseIconManager
 	final static public String Image_CheckColumns = "checkColumns.gif";
 	final static public String Image_FlameIcon = "flameIcon.gif";
 	
-	final static public String Image_FnMetric = "FnMetric.gif";
-	final static public String Image_FontBigger = "FontBigger.gif";
-	final static public String Image_FontSmaller = "FontSmaller.gif";
-	final static public String Image_SaveCSV = "savecsv.gif";
+	final static public String Image_FnMetric = "FnMetric.png";
+	final static public String Image_FontBigger = "FontBigger.png";
+	final static public String Image_FontSmaller = "FontSmaller.png";
+	final static public String Image_SaveCSV = "savecsv.png";
 	final static public String Image_Graph = "Graph.png";
 	final static public String Image_ThreadView = "cct-thread.png";
 	final static public String Image_ThreadMap = "cct-thread-map.png";
