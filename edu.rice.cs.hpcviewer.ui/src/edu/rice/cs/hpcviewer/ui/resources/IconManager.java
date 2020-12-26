@@ -28,8 +28,8 @@ public class IconManager  extends BaseIconManager
 	
 	final static public String Image_ZoomIn = "ZoomIn.gif";
 	final static public String Image_ZoomOut = "ZoomOut.gif";
-	final static public String Image_Flatten = "Flatten.gif";
-	final static public String Image_Unflatten = "Unflatten.gif";
+	final static public String Image_Flatten = "Flatten.png";
+	final static public String Image_Unflatten = "Unflatten.png";
 	
 	final static public String Image_CheckColumns = "checkColumns.gif";
 	final static public String Image_FlameIcon = "flameIcon.gif";
