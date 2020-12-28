@@ -53,7 +53,9 @@ import org.eclipse.jface.window.Window;
  *********************************************************/
 public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClickListener, ICheckStateListener
 {
-	private Table table;
+	private static final int INITIAL_SIZE_X = 450;
+	private static final int INITIAL_SIZE_Y = 500;
+	
 	private Button btnEdit, btnDelete;
 	private CheckboxTableViewer checkboxTableViewer;
 	
@@ -82,16 +84,20 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
-		container.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridData parentGD = new GridData(GridData.FILL_BOTH);
 		
 		checkboxTableViewer = CheckboxTableViewer.newCheckList(container, 
 															   SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		ColumnViewerToolTipSupport.enableFor(checkboxTableViewer, ToolTip.NO_RECREATE);
 		
-		table = checkboxTableViewer.getTable();
+		Table table = checkboxTableViewer.getTable();
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		table.setLayoutData(gd);
+		
+		container.setLayoutData(parentGD);
+
 		
 		TableViewerColumn columnPattern = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
 		columnPattern.setLabelProvider(new PatternLabelProvider());
@@ -193,6 +199,12 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	
 	
 	@Override
+	protected boolean isResizable() {
+		return true;
+	}
+
+	
+	@Override
 	protected void okPressed() {
 		// check if there's any change compared to the original filter
 		FilterMap newMap = FilterMap.getInstance();
@@ -229,7 +241,7 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 300);
+		return new Point(INITIAL_SIZE_X, INITIAL_SIZE_Y);
 	}
 		
 	
