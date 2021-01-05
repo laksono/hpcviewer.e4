@@ -72,6 +72,9 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	 */
 	public FilterPropertyDialog(Shell parentShell, FilterStateProvider filterService) {
 		super(parentShell);
+
+		setShellStyle(SWT.TITLE | SWT.MODELESS | SWT.RESIZE);
+
 		filterMap = new FilterMap();
 		this.filterService = filterService;
 	}
