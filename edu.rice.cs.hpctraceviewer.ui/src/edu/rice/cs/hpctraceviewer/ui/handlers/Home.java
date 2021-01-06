@@ -21,8 +21,9 @@ public class Home
 		}
 		TracePart traceView   = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
-		actions.home();
-	}
+		if (actions != null)
+			actions.home();
+	}	
 
 	@CanExecute
 	public boolean canExecute() {

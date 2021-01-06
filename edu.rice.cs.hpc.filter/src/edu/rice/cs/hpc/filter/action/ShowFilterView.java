@@ -9,7 +9,6 @@ import org.eclipse.e4.ui.services.IServiceConstants;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
 
-import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpc.filter.service.FilterStateProvider;
 import edu.rice.cs.hpc.filter.view.FilterPropertyDialog;
 
@@ -22,11 +21,9 @@ public class ShowFilterView
 	@Execute
 	public Object execute( @Named(IServiceConstants.ACTIVE_SHELL) Shell shell, IEventBroker eventBroker) 
 	{
-		FilterPropertyDialog dialog = new FilterPropertyDialog(shell);
+		FilterPropertyDialog dialog = new FilterPropertyDialog(shell, filterService);
 		
 		if (dialog.open() == IDialogConstants.OK_ID) {
-			FilterMap map = dialog.getInput();
-			filterService.broadcast(map);
 		}
 
 		return null;

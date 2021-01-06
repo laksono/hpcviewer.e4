@@ -323,7 +323,7 @@ public class ScopeTreeViewer extends TreeViewer implements IPropertyChangeListen
 			//  and the text is cropped badly.
 			
 			TreeItem item = tree.getTopItem();
-			if (level >= 0)
+			if (level >= 0 && item != null)
 				item = item.getItem(level);
 			
 			tree.showItem(item);

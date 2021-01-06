@@ -48,6 +48,8 @@ public class GoScroll
 		
 		TracePart traceView = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
+		if (actions == null)
+			return false;
 		
 		if (param.equals(PARAM_VALUE_LEFT)) {
 			return actions.canGoLeft();

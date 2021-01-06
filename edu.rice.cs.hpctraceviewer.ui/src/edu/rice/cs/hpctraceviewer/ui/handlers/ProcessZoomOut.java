@@ -27,7 +27,7 @@ public class ProcessZoomOut {
 		TracePart traceView   = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
 		
-		return actions.canProcessZoomOut();
+		return (actions != null ? actions.canProcessZoomOut() : false);
 	}
 		
 }

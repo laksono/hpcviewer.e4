@@ -4,8 +4,12 @@ import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.jface.viewers.StyledString.Styler;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.TextStyle;
+import org.eclipse.swt.widgets.Link;
 
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScope;
 import edu.rice.cs.hpc.data.experiment.scope.CallSiteScopeCallerView;
@@ -13,6 +17,7 @@ import edu.rice.cs.hpc.data.experiment.scope.ProcedureScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpc.data.util.string.StringUtil;
+import edu.rice.cs.hpcsetting.fonts.FontManager;
 import edu.rice.cs.hpcsetting.preferences.ViewerPreferenceManager;
 import edu.rice.cs.hpcviewer.ui.resources.ColorManager;
 import edu.rice.cs.hpcviewer.ui.resources.IconManager;
@@ -70,16 +75,29 @@ public class StyledScopeLabelProvider extends DelegatingStyledCellLabelProvider
 	private static class ScopeLabelProvider extends ColumnLabelProvider implements IStyledLabelProvider
 	{
 		private final TreeViewer treeViewer;
+		private final Styler STYLE_ACTIVE_LINK ;
 		
 		public ScopeLabelProvider(TreeViewer treeViewer) {
 			this.treeViewer = treeViewer;
+			
+			final Link link = new Link(treeViewer.getTree(), SWT.NONE);
+			final Color colorLinkActive = link.getLinkForeground();
+			
+			STYLE_ACTIVE_LINK = new StyledString.Styler() {
+
+				@Override
+				public void applyStyles(TextStyle textStyle) {
+					textStyle.foreground = colorLinkActive;
+					textStyle.font 		 = FontManager.getFontGeneric();
+				}				
+			};
 		}
 		
 		@Override
 		public Color getBackground(Object element) {
 			Scope input = (Scope) treeViewer.getInput();
 			if (input != null && input.getChildAt(0) == element)
-				return ColorManager.getColorTopRow();
+				return ColorManager.getColorTopRow(treeViewer.getControl());
 			return null;
 		}
 
@@ -113,7 +131,7 @@ public class StyledScopeLabelProvider extends DelegatingStyledCellLabelProvider
 			final String text = getText(node);
 
 			if(Utilities.isFileReadable(node)) {
-				styledString.append( text, Utilities.STYLE_ACTIVE_LINK );
+				styledString.append( text, STYLE_ACTIVE_LINK );
 			} else {
 				styledString.append( text, Utilities.STYLE_INACTIVE_LINK );
 			}

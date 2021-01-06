@@ -19,7 +19,8 @@ public class LoadConfiguration
 		}
 		TracePart traceView   = (TracePart) part.getObject();
 		ITraceViewAction actions = traceView.getActions();
-		actions.openConfiguration();
+		if (actions != null)
+			actions.openConfiguration();
 	}
 	
 	

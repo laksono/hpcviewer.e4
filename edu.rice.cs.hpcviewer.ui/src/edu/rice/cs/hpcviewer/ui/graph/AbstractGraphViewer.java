@@ -11,14 +11,17 @@ import javax.annotation.PostConstruct;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.swtchart.Chart;
+import org.swtchart.IAxis;
 import org.swtchart.IAxisSet;
 import org.swtchart.IAxisTick;
 
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
+import edu.rice.cs.hpcbase.BaseConstants;
 import edu.rice.cs.hpcviewer.ui.base.IUpperPart;
 import edu.rice.cs.hpcviewer.ui.util.ElementIdManager;
 
@@ -123,6 +126,24 @@ public abstract class AbstractGraphViewer extends CTabItem implements IUpperPart
 		setToolTipText(title);
 		setText(title);
 		
+		Color bg = chart.getBackground();
+
+		Display display = Display.getDefault();
+
+		// Pick the color of the text indicating sample depth. 
+		// If the background is sufficiently light, pick dark blue, otherwise white
+		Color fg = display.getSystemColor(SWT.COLOR_DARK_BLUE);
+		
+		if (bg.getRed()+bg.getBlue()+bg.getGreen() <= BaseConstants.DARKEST_COLOR_FOR_BLACK_TEXT)
+			fg = display.getSystemColor(SWT.COLOR_WHITE);
+
+		chart.getTitle().setForeground(fg);
+		IAxis[] axis = chart.getAxisSet().getAxes();
+		for(IAxis x: axis) {
+			x.getTitle().setForeground(fg);
+			x.getTick().setForeground(fg);
+		}
+		
 		//----------------------------------------------
 		// main part: ask the subclass to plot the graph
 		//----------------------------------------------
@@ -136,7 +157,6 @@ public abstract class AbstractGraphViewer extends CTabItem implements IUpperPart
 
 		// have to adjust the range separately on E4.
 		
-		Display display = Display.getDefault();
 		display.asyncExec(new Runnable() {
 			
 			@Override

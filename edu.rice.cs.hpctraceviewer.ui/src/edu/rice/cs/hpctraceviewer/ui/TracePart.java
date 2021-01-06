@@ -231,7 +231,10 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 	
 	
 	public ITraceViewAction getActions() {
-		return tbtmTraceView.getActions();
+		if (tbtmTraceView != null)
+			return tbtmTraceView.getActions();
+		
+		return null;
 	}
 	
 	
@@ -251,7 +254,8 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 	
 	@Focus
 	public void onFocus() {
-		tabFolderTopLeft.setFocus();
+		if (tabFolderTopLeft != null && !tabFolderTopLeft.isDisposed())
+			tabFolderTopLeft.setFocus();
 	}
 
 	

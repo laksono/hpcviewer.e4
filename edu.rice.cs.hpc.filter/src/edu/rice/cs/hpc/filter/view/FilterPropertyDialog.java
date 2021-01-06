@@ -38,6 +38,8 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 
 import edu.rice.cs.hpc.data.filter.FilterAttribute;
 import edu.rice.cs.hpc.filter.service.FilterMap;
+import edu.rice.cs.hpc.filter.service.FilterStateProvider;
+
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.jface.window.Window;
@@ -53,7 +55,11 @@ import org.eclipse.jface.window.Window;
  *********************************************************/
 public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClickListener, ICheckStateListener
 {
-	private Table table;
+	private static final int INITIAL_SIZE_X = 450;
+	private static final int INITIAL_SIZE_Y = 500;
+	
+	private final FilterStateProvider filterService;
+	
 	private Button btnEdit, btnDelete;
 	private CheckboxTableViewer checkboxTableViewer;
 	
@@ -64,9 +70,13 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	 * Create the dialog.
 	 * @param parentShell
 	 */
-	public FilterPropertyDialog(Shell parentShell) {
+	public FilterPropertyDialog(Shell parentShell, FilterStateProvider filterService) {
 		super(parentShell);
+
+		setShellStyle(SWT.TITLE | SWT.MODELESS | SWT.RESIZE);
+
 		filterMap = new FilterMap();
+		this.filterService = filterService;
 	}
 
 	
@@ -82,16 +92,20 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 		Composite area = (Composite) super.createDialogArea(parent);
 		Composite container = new Composite(area, SWT.NONE);
 		container.setLayout(new GridLayout(2, false));
-		container.setLayoutData(new GridData(GridData.FILL_BOTH));
+		GridData parentGD = new GridData(GridData.FILL_BOTH);
 		
 		checkboxTableViewer = CheckboxTableViewer.newCheckList(container, 
 															   SWT.BORDER | SWT.FULL_SELECTION | SWT.MULTI);
 		ColumnViewerToolTipSupport.enableFor(checkboxTableViewer, ToolTip.NO_RECREATE);
 		
-		table = checkboxTableViewer.getTable();
+		Table table = checkboxTableViewer.getTable();
 		table.setLinesVisible(true);
 		table.setHeaderVisible(true);
-		table.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		table.setLayoutData(gd);
+		
+		container.setLayoutData(parentGD);
+
 		
 		TableViewerColumn columnPattern = new TableViewerColumn(checkboxTableViewer, SWT.NONE);
 		columnPattern.setLabelProvider(new PatternLabelProvider());
@@ -193,24 +207,26 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	
 	
 	@Override
+	protected boolean isResizable() {
+		return true;
+	}
+
+	
+	@Override
 	protected void okPressed() {
-		// check if there's any change compared to the original filter
-		FilterMap newMap = FilterMap.getInstance();
-		newMap.iterator(); // TODO: forcing to load data
-		boolean same = true;
-		
-		if (newMap.size() == filterMap.size()) {
-			same = newMap.equals(filterMap);
-		} else {
-			same = false;
-		}
-		
-		if (!same) {
-			filterMap.save();
-		}
+		apply();
 		super.okPressed();
 	}
 	
+	
+	@Override
+	protected void buttonPressed(int buttonId) {
+		if (buttonId == IDialogConstants.HELP_ID) {
+			apply();
+			return;
+		}
+		super.buttonPressed(buttonId);
+	}
 	
 	
 	/**
@@ -221,6 +237,7 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	protected void createButtonsForButtonBar(Composite parent) {
 		createButton(parent, IDialogConstants.OK_ID,     IDialogConstants.OK_LABEL,     true);
 		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+		createButton(parent, IDialogConstants.HELP_ID,   "Apply",                       false);
 	}
 
 	
@@ -229,9 +246,35 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 	 */
 	@Override
 	protected Point getInitialSize() {
-		return new Point(450, 300);
+		return new Point(INITIAL_SIZE_X, INITIAL_SIZE_Y);
 	}
 		
+	
+	/**
+	 * Apply the change and broadcast to everyone if necessary
+	 */
+	private void apply() {
+		// 1. check if there's any change compared to the original filter
+		FilterMap newMap = FilterMap.getInstance();
+		newMap.iterator(); // TODO: forcing to load data
+		
+		// check if they have the same size
+		// if they do, check the content
+		boolean same = newMap.size() == filterMap.size();
+		
+		if (same) {
+			// check the content
+			same = newMap.equals(filterMap);
+		}
+		
+		// 2. save the filter, and broadcast it
+		if (!same) {
+			filterMap.save();
+			if (filterService != null) {
+				filterService.broadcast(filterMap);
+			}
+		}
+	}
 	
 	/***
 	 * edit the current selected row
@@ -542,7 +585,7 @@ public class FilterPropertyDialog extends TitleAreaDialog implements IDoubleClic
 		
 		final Shell shell = new Shell();
 		
-		FilterPropertyDialog dlg = new FilterPropertyDialog(shell);
+		FilterPropertyDialog dlg = new FilterPropertyDialog(shell, null);
 		dlg.open();
 		FilterMap map = dlg.getInput();
 		

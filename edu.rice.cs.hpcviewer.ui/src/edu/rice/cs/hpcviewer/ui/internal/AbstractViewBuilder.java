@@ -79,20 +79,22 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 
 	final private int ACTION_ZOOM_IN      = 0;
 	final private int ACTION_ZOOM_OUT     = 1;
-	final private int ACTION_HOTPATH      = 2;
-	final private int ACTION_ADD_METRIC   = 3;
-	final private int ACTION_EXPORT_DATA  = 4;
-	final private int ACTION_COLUMN_HIDE  = 5; 
-	final private int ACTION_FONT_BIGGER  = 6;
-	final private int ACTION_FONT_SMALLER = 7;
+	final private int ACTION_HOTPATH      = 3;
+	final private int ACTION_ADD_METRIC   = 4;
+	final private int ACTION_EXPORT_DATA  = 5;
+	final private int ACTION_COLUMN_HIDE  = 6; 
+	final private int ACTION_FONT_BIGGER  = 8;
+	final private int ACTION_FONT_SMALLER = 9;
 
 	final private ActionType []actionTypes = {
 			new ActionType(IconManager.Image_ZoomIn ,      "Zoom-in the selected node"),
 			new ActionType(IconManager.Image_ZoomOut,      "Zoom-out from the current scope"),
+			ActionType.ActionTypeNull,
 			new ActionType(IconManager.Image_FlameIcon,    "Expand the hot path below the selected node"),
 			new ActionType(IconManager.Image_FnMetric,     "Add a new derived metric"),
 			new ActionType(IconManager.Image_SaveCSV,      "Export displayed data into a CSV format file"),
 			new ActionType(IconManager.Image_CheckColumns, "Hide/show columns"),
+			ActionType.ActionTypeNull,
 			new ActionType(IconManager.Image_FontBigger,   "Increase font size"),
 			new ActionType(IconManager.Image_FontSmaller,  "Decrease font size")
 	};
@@ -381,7 +383,9 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
 	 * @return {@code ToolItem}
 	 */
 	protected ToolItem createToolItem(ToolBar toolbar, String name, String tooltip) {
-				
+		if (name == null) {
+			return new ToolItem(toolbar, SWT.SEPARATOR);
+		}
 		return createToolItem(toolbar, SWT.PUSH, name, tooltip);
 	}
 	
@@ -671,6 +675,7 @@ public abstract class AbstractViewBuilder implements IViewBuilder, ISelectionCha
     
     static protected class ActionType
     {
+    	public static final ActionType ActionTypeNull = new ActionType(null, null);
     	public String   imageFileName;
     	public String   tooltip;
     	

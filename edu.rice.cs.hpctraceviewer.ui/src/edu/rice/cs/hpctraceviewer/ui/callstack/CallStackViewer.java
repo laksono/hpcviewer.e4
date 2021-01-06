@@ -300,6 +300,8 @@ public class CallStackViewer extends AbstractBaseTableViewer
 	
 	@Override
 	public void widgetDisposed(DisposeEvent e) {
+		super.widgetDisposed(e);
+		
 		tracePart.getOperationHistory().removeOperationHistoryListener(this);
 		getTable().removeDisposeListener(this);
 		getTable().removeListener(SWT.Selection, selectionListener);
