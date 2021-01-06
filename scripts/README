@@ -1,0 +1,23 @@
+Installing hpcviewer
+====================
+
+* Uncompress the tar file 
+	tar xzf hpcviewer-......tgz.
+* Run install script:
+	install [hpctoolkit_installation_directory]
+
+This will install the hpcviewer executable and its components in 
+[hpctoolkit_installation_directory]
+
+* To run the viewer, type:
+
+	[hpctoolkit_installation_directory]/bin/hpcviewer
+
+
+Notes
+====================
+
+* By default, the configuration files are located in 
+  $USER/.hpctoolkit/hpcviewer/<platform>/
+* To reset the configuration, you need to remove this directory.
+

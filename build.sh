@@ -57,7 +57,9 @@ repackage_linux(){
 	cd tmp/hpcviewer
 
 	tar xzf  ../../$package
-	cp ../../scripts/* .
+	cp ../../scripts/hpcviewer.sh .
+	cp ../../scripts/install .
+	cp ../../scripts/README .
 
 	cd ..
 
