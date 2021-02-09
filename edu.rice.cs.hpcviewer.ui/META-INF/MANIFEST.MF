@@ -42,7 +42,7 @@ Require-Bundle: edu.rice.cs.hpc.data,
  edu.rice.cs.hpclog,
  edu.rice.cs.hpctraceviewer.data,
  org.eclipse.nebula.widgets.nattable.core,
- org.eclipse.nebula.widgets.nattable.extension.glazedlists;bundle-version="1.6.0"
+ org.eclipse.nebula.widgets.nattable.extension.glazedlists
 Import-Package: ca.odell.glazedlists
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
