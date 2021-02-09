@@ -1,7 +1,6 @@
 package edu.rice.cs.hpctraceviewer.ui.depth;
 
 import java.util.Queue;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,15 +25,17 @@ public class DepthViewPaint extends BaseViewPaint {
 	private final GC masterGC;
 	private final AtomicInteger timelineDone, numDataCollected;
 	private float numPixels;
+	private final int visibleDepth;
 
 	public DepthViewPaint(final GC masterGC, SpaceTimeDataController data,
-			ImageTraceAttributes attributes, boolean changeBound, ISpaceTimeCanvas canvas, 
-			ExecutorService threadExecutor) {
+			ImageTraceAttributes attributes, boolean changeBound, 
+			ISpaceTimeCanvas canvas, int visibleDepth) {
 		
 		super("Depth view", data, changeBound,  canvas);
 		this.masterGC = masterGC;
 		timelineDone  = new AtomicInteger(0);
 		numDataCollected  = new AtomicInteger(0);
+		this.visibleDepth = visibleDepth;
 	}
 
 	@Override
@@ -51,7 +52,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		if (process >= attributes.getProcessBegin() && process <= attributes.getProcessEnd()) {
 			// TODO warning: data races for accessing the current process timeline 
 			if ( controller.getCurrentDepthTrace() != null) {
-				numPixels = attributes.getDepthPixelVertical()/(float)controller.getMaxDepth();
+				numPixels = attributes.getDepthPixelVertical()/(float)visibleDepth;
 				return changedBounds;
 			}
 		}
@@ -62,7 +63,7 @@ public class DepthViewPaint extends BaseViewPaint {
 	@Override
 	protected int getNumberOfLines() {
 		final ImageTraceAttributes attributes = controller.getAttributes();
-		return Math.min(attributes.getDepthPixelVertical(), controller.getMaxDepth());
+		return Math.min(attributes.getDepthPixelVertical(), visibleDepth);
 	}
 
 	@Override
@@ -72,7 +73,7 @@ public class DepthViewPaint extends BaseViewPaint {
 		ImageTraceAttributes attributes = controller.getAttributes();
 		
 		return new TimelineDepthThread( controller, attributes, yscale, queue, numDataCollected,
-										monitor);
+										monitor, visibleDepth);
 	}
 
 	@Override
@@ -112,4 +113,10 @@ public class DepthViewPaint extends BaseViewPaint {
 		if (masterGC != null && !masterGC.isDisposed())
 			masterGC.dispose();
 	}
+
+	@Override
+	protected void endPreparationThread(BaseTimelineThread thread, int result) {}
+
+	@Override
+	protected void endDataPreparation(int numInvalidData) {}
 }

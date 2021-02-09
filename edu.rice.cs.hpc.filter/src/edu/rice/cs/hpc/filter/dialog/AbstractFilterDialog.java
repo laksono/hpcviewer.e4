@@ -5,6 +5,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TitleAreaDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -284,10 +285,17 @@ public abstract class AbstractFilterDialog extends TitleAreaDialog
 	 * derived from the parent
 	 */
 	protected void okPressed() {
-		for (int i=0; i<arrElements.size(); i++) {
-			 items.get(i).checked  = (this.arrElements.get(i).isChecked);
-		} 
+		int numChecked = 0;
 		
+		for (int i=0; i<arrElements.size(); i++) {
+			boolean checked = this.arrElements.get(i).isChecked;
+			items.get(i).checked  = checked;
+			numChecked += (checked ? 1 : 0);
+		} 
+		if (numChecked == 0) {
+			MessageDialog.openError(getShell(), "Invalid entry", "Empty selection is not allowed.");
+			return;
+		}
 		super.okPressed();	// this will shut down the window
 	}
 

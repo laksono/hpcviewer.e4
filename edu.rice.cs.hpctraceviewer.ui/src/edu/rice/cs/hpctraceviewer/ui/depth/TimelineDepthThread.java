@@ -24,6 +24,7 @@ import edu.rice.cs.hpctraceviewer.ui.internal.BaseTimelineThread;
 public class TimelineDepthThread 
 	extends BaseTimelineThread
 {
+	private final int visibleDepths;
 
 	/*****
 	 * Thread initialization
@@ -38,9 +39,11 @@ public class TimelineDepthThread
 								ImageTraceAttributes attributes,
 								double scaleY, Queue<TimelineDataSet> queue, 
 								AtomicInteger timelineDone, 
-								IProgressMonitor monitor)
+								IProgressMonitor monitor,
+								int visibleDepths)
 	{
 		super(data, scaleY, queue, timelineDone, monitor);
+		this.visibleDepths = visibleDepths;
 	}
 
 
@@ -54,7 +57,7 @@ public class TimelineDepthThread
 		}
 		final ImageTraceAttributes attributes = stData.getAttributes();
 		int currentDepthLineNum = currentLine.getAndIncrement();
-		if (currentDepthLineNum < Math.min(attributes.getDepthPixelVertical(), stData.getMaxDepth())) {
+		if (currentDepthLineNum < Math.min(attributes.getDepthPixelVertical(), visibleDepths)) {
 			
 			// I can't get the data from the ProcessTimeline directly, so create
 			// a ProcessTimeline with data=null and then copy the actual data to
@@ -74,7 +77,6 @@ public class TimelineDepthThread
 
 	@Override
 	protected boolean init(ProcessTimeline trace) {
-
 		return true;
 	}
 
@@ -84,11 +86,33 @@ public class TimelineDepthThread
 
 	@Override
 	protected DataPreparation getData( DataLinePainting data ) {
+		int selectedDepth = stData.getAttributes().getDepth();
+		int maxDepth = stData.getMaxDepth();
+		int minDepth = getMinDepth(selectedDepth, visibleDepths, maxDepth);
 		
-		// the current depth is the current line to be painted
+		// the current depth is the current line to be painted		
+		data.depth = minDepth + data.ptl.line();
+		return new DepthDataPreparation(data, minDepth, visibleDepths);
+	}
+	
+	
+	/***
+	 * Retrieve the first visible depth
+	 * 
+	 * @param currentDepth the current selected depth
+	 * @param visibleDepths number of visible depths
+	 * @param maxDepth maximum depths
+	 * @return the first visible depth
+	 */
+	static int getMinDepth(int currentDepth, int visibleDepths, int maxDepth) {
+		float mid = (float) (visibleDepths * 0.5);
+		if (currentDepth>=0 && currentDepth<= mid)
+			return 0;
 		
-		data.depth = data.ptl.line();
+		if (currentDepth+mid >= maxDepth)
+			return (int) (maxDepth-visibleDepths);
 		
-		return new DepthDataPreparation(data);
-	}	
+		int mx = (int) (currentDepth + mid);
+		return mx-visibleDepths;
+	}
 }

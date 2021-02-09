@@ -300,6 +300,8 @@ public class RemoteDBOpener extends AbstractDBOpener
 
 		byte[] compressedXMLMessage;
 		DataInputStream dxmlReader;
+		Socket xmlConnection = null;
+		
 		if (xmlMessagePortNumber == port)
 		{
 			dxmlReader = receiver;
@@ -307,7 +309,7 @@ public class RemoteDBOpener extends AbstractDBOpener
 		}
 		else
 		{
-			Socket xmlConnection = new Socket();
+			xmlConnection = new Socket();
 			SocketAddress xmlAddress = new InetSocketAddress(serverURL, xmlMessagePortNumber);
 			xmlConnection.connect(xmlAddress, 1000);
 			BufferedInputStream buf = new BufferedInputStream(xmlConnection.getInputStream());
@@ -329,6 +331,10 @@ public class RemoteDBOpener extends AbstractDBOpener
 		}
 		GZIPInputStream xmlStream = new GZIPInputStream(new 
 				ByteArrayInputStream(compressedXMLMessage));
+		
+		if (xmlConnection != null)
+			xmlConnection.close();
+		
 		return xmlStream;
 	}
 
@@ -434,6 +440,12 @@ public class RemoteDBOpener extends AbstractDBOpener
 		}
 		
 		return true;
+	}
+
+	@Override
+	public int getVersion() {
+		// TODO Auto-generated method stub
+		return 0;
 	}	
 }
 

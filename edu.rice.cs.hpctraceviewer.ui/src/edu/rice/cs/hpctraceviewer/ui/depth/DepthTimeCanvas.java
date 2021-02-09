@@ -1,8 +1,5 @@
 package edu.rice.cs.hpctraceviewer.ui.depth;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.operations.IOperationHistoryListener;
 import org.eclipse.core.commands.operations.IUndoContext;
@@ -29,7 +26,6 @@ import edu.rice.cs.hpctraceviewer.ui.internal.BaseViewPaint;
 import edu.rice.cs.hpctraceviewer.ui.operation.AbstractTraceOperation;
 import edu.rice.cs.hpctraceviewer.ui.operation.PositionOperation;
 import edu.rice.cs.hpctraceviewer.ui.operation.ZoomOperation;
-import edu.rice.cs.hpctraceviewer.ui.util.Utility;
 import edu.rice.cs.hpctraceviewer.data.SpaceTimeDataController;
 import edu.rice.cs.hpctraceviewer.data.Frame;
 import edu.rice.cs.hpctraceviewer.data.ImageTraceAttributes;
@@ -38,17 +34,24 @@ import edu.rice.cs.hpctraceviewer.data.ColorTable;
 import edu.rice.cs.hpctraceviewer.data.util.Constants;
 
 
-/**A view for displaying the depthview.*/
+
+/**********************************************************
+ * 
+ * A canvas for displaying the depth view.
+ *
+ **********************************************************/
 public class DepthTimeCanvas extends AbstractTimeCanvas 
 	implements IOperationHistoryListener, ISpaceTimeCanvas
 {	
-	final private ExecutorService threadExecutor;
-	final private ITracePart tracePart;
+	private final static float FRACTION_ZOOM_DEPTH = 2.0f;
+	private final static int   DEPTH_MIN = 1;
+	
+	private final ITracePart tracePart;
 
 	private SpaceTimeDataController stData;
 	private int currentProcess = Integer.MIN_VALUE;
-	private boolean needToRedraw = false;
 	private Rectangle bound;
+	private int visibleDepths;
 
 	/********************
 	 * constructor to create this canvas
@@ -60,7 +63,6 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		super(composite, SWT.NONE);
 		
 		this.tracePart = tracePart;
-		threadExecutor = Executors.newFixedThreadPool( Utility.getNumThreads(0) ); 
 	}
 	
 	/****
@@ -76,7 +78,8 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 			// just initialize once
 			tracePart.getOperationHistory().addOperationHistoryListener(this);
 		}
-		this.stData = stData; 		
+		this.stData = stData;
+		visibleDepths = stData.getMaxDepth();
 	}
 	
 	@Override
@@ -85,14 +88,13 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		removeDisposeListener(this);
 		tracePart.getOperationHistory().removeOperationHistoryListener(this);
 		super.widgetDisposed(e);
-
-		threadExecutor.shutdown();
 	}
 	
 	/*
 	 * (non-Javadoc)
 	 * @see org.eclipse.swt.events.PaintListener#paintControl(org.eclipse.swt.events.PaintEvent)
 	 */
+	@Override
 	public void paintControl(PaintEvent event)
 	{
 		bound = getClientArea();
@@ -100,12 +102,6 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		if (stData == null )
 			return;
 		
-		if (needToRedraw) {
-			refreshWithCondition();
-			
-			// set the flag that we don't need to redraw again
-			needToRedraw = false;
-		}
 		super.paintControl(event);
 		
 		final long topLeftPixelX = Math.round(stData.getAttributes().getTimeBegin()*getScalePixelsPerTime());
@@ -123,10 +119,11 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		int topPixelCrossHairX = (int)(Math.round(selectedTime*getScalePixelsPerTime())-2-topLeftPixelX);
 		event.gc.fillRectangle(topPixelCrossHairX,0,4,viewHeight);
 		
-		final int maxDepth = stData.getMaxDepth();
 		final int depth    = stData.getAttributes().getDepth();
-		
-		final int width    = depth*viewHeight/maxDepth+viewHeight/(2*maxDepth);
+		final int maxDepth = stData.getMaxDepth();
+		final int minDepth = TimelineDepthThread.getMinDepth(depth, visibleDepths, maxDepth);
+		final int cdepth   = depth-minDepth;
+		final int width    = cdepth*viewHeight/visibleDepths + viewHeight/(2*visibleDepths);
 		event.gc.fillRectangle(topPixelCrossHairX-8,width-1,20,4);
 	}
 	
@@ -139,40 +136,9 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		rebuffer();
     }
     
-    public void activate(boolean isActivated)
-    {
-    	this.needToRedraw = isActivated;
-    }
     
-    /****
-     *  refresh only if the size of the buffer doesn't match with the size of the canvas
-     */
-    private void refreshWithCondition() 
-    {
-		if (getBuffer() == null) {
-			rebuffer();
-			return;
-		}
-		
-		// ------------------------------------------------------------------------
-		// we need to avoid repainting if the size of the image buffer is not the same
-		// as the image of the canvas. This case happens when the view is resize while
-		// it's in hidden state, and then it turns visible. 
-		// this will cause misalignment in the view
-		// ------------------------------------------------------------------------
-		
-		final Rectangle r1 = getBuffer().getBounds();
-		final Rectangle r2 = bound;
-		
-		if (!(r1.height == r2.height && r1.width == r2.width))
-		{
-			// the size if not the same, we need to recompute and repaint again
-			rebuffer();
-		}
-    }
-    
-    
-	public double getScalePixelsPerTime()
+    @Override
+    public double getScalePixelsPerTime()
 	{
 		if (bound == null) {
 			final Display display = Display.getDefault();
@@ -189,10 +155,49 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 		return (double)viewWidth / (double)getNumTimeDisplayed();
 	}
 
+    @Override
 	public double getScalePixelsPerRank() {
-		return Math.max(bound.height/(double)stData.getMaxDepth(), 1);
+		return Math.max(bound.height/(double)visibleDepths, 1);
 	}
 
+	
+	/****
+	 * Zoom out the depth: increase the depth so users can see more 
+	 */
+	public void zoomOut() {
+		visibleDepths  = (int) Math.min(stData.getMaxDepth(), visibleDepths + FRACTION_ZOOM_DEPTH);
+		
+		rebuffer();
+	}
+	
+	
+	/****
+	 * Zoom in the depth: decrease the depth so user can see more pixels
+	 */
+	public void zoomIn() {
+		visibleDepths  = (int) Math.max(DEPTH_MIN, visibleDepths - FRACTION_ZOOM_DEPTH);
+		 
+		rebuffer();
+	}
+	
+	
+	/****
+	 * check if we can zoom out
+	 * @return true if it's feasible
+	 */
+	public boolean canZoomOut() {
+		return visibleDepths < stData.getMaxDepth();
+	}
+	
+	
+	/****
+	 * check if can zoom in
+	 * @return true if it's possible
+	 */
+	public boolean canZoomIn() {
+		return visibleDepths > DEPTH_MIN;
+	}
+	
 	
 	//---------------------------------------------------------------------------------------
 	// PRIVATE METHODS
@@ -249,8 +254,8 @@ public class DepthTimeCanvas extends AbstractTimeCanvas
 																stData, 
 																attributes, 
 																true, 
-																DepthTimeCanvas.this, 
-																threadExecutor);
+																DepthTimeCanvas.this,
+																visibleDepths);
 				
 				depthPaint.addJobChangeListener(new DepthJobListener());
 				depthPaint.schedule();

@@ -7,7 +7,9 @@ Bundle-Vendor: Rice University
 Export-Package: edu.rice.cs.hpctraceviewer.ui,
  edu.rice.cs.hpctraceviewer.ui.main,
  edu.rice.cs.hpctraceviewer.ui.preferences
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: javax.inject,
+ javax.annotation,
+ org.eclipse.core.runtime,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.jface,
  edu.rice.cs.hpc.data,
@@ -26,7 +28,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Automatic-Module-Name: edu.rice.cs.hpctraceviewer.ui
 Import-Package: edu.rice.cs.hpc.filter.dialog,
  edu.rice.cs.hpctraceviewer.data,
- javax.annotation;resolution:=optional,
- javax.inject,
  org.eclipse.e4.core.contexts
 Bundle-ActivationPolicy: lazy

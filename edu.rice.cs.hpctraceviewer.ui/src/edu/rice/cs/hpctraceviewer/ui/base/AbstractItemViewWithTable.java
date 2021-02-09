@@ -285,25 +285,16 @@ public abstract class AbstractItemViewWithTable extends AbstractBaseItem
 	 * Color of the procedure
 	 *
 	 *************************************************************/
-	static private class ColumnColorLabelProvider extends ColumnLabelProvider 
+	static private class ColumnColorLabelProvider extends ColorColumnLabelProvider 
 	{
-		private final static String EMPTY = " ";
-		
 		@Override
-		public String getText(Object element) {
-			return EMPTY;
-		}
-		
-		
-		@Override
-		public Color getBackground(Object element) {
+		protected Color getColor(org.eclipse.swt.widgets.Event event, Object element) {
 			if (element != null && element instanceof StatisticItem) {
 				StatisticItem item = (StatisticItem) element;
 				return item.color;
 			}
-			return null;
+			return event.display.getSystemColor(SWT.COLOR_WHITE);
 		}
-
 	}
 	
 	/*************************************************************

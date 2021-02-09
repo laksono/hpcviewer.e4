@@ -87,6 +87,10 @@ public class FilterRanks
 					listChecked.add(i);
 				}
 			}
+			if (listChecked.size() == 0) {
+				return;
+			}
+			
 			// update the data and broadcast to everyone that we probably have new filtered ranks
 			// TODO: we need to check if the new one is the same with the old one or not.
 			

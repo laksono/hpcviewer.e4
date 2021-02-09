@@ -40,12 +40,11 @@ Require-Bundle: edu.rice.cs.hpc.data,
  edu.rice.cs.hpcsetting,
  edu.rice.cs.hpctoolcontrol,
  edu.rice.cs.hpclog,
- org.eclipse.collections,
- org.eclipse.nebula.nattable
+ edu.rice.cs.hpctraceviewer.data,
+ org.eclipse.nebula.widgets.nattable.core,
+ org.eclipse.nebula.widgets.nattable.extension.glazedlists;bundle-version="1.6.0"
+Import-Package: ca.odell.glazedlists
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Provide-Capability: licensing.feature;licensing.feature="edu.rice.cs.hpcviewer.ui.product"
-Import-Package: ca.odell.glazedlists,
- javax.annotation;version="1.0.0";resolution:=optional,
- javax.inject;version="1.0.0"
 Automatic-Module-Name: edu.rice.cs.hpcviewer.ui

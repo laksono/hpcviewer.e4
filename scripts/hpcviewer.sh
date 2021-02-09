@@ -151,6 +151,11 @@ eval set -- "$PARAMS"
 #  https://bugs.eclipse.org/bugs/show_bug.cgi?id=470994
 # export SWT_GTK3=0
 
+# Fix issue with GTK3 overlay scrolling by forcing the window
+# manager to display the scroll bars instead of hiding them
+# automatically
+export GTK_OVERLAY_SCROLLING=0 
+
 #------------------------------------------------------------
 # Launch the viewer.
 #------------------------------------------------------------

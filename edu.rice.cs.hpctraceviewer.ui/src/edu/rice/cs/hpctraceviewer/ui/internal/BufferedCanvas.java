@@ -114,6 +114,9 @@ public abstract class BufferedCanvas extends Canvas
 	 */
 	public void widgetDisposed(DisposeEvent e)
 	{
+		removePaintListener(this);
+		removeDisposeListener(this);
+		
 		if (imageBuffer != null)
 			imageBuffer.dispose();
 	}

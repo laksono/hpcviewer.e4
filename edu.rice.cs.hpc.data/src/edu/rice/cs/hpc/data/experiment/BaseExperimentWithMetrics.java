@@ -39,7 +39,8 @@ implements IMetricManager
 	 */
 	private Map<Integer, BaseMetric> mapIndexToMetric;
 	
-
+	private Map<String, BaseMetric> mapIdToMetric;
+	
 	//////////////////////////////////////////////////////////////////////////
 	//ACCESS TO METRICS													    //
 	//////////////////////////////////////////////////////////////////////////
@@ -57,13 +58,15 @@ implements IMetricManager
 	public void setMetrics(List<BaseMetric> metricList) {
 		metrics = metricList;
 		mapIndexToMetric = new HashMap<Integer, BaseMetric>(metricList.size());
-		
+		mapIdToMetric    = new HashMap<>(metricList.size());
 		metricsWithOrder = new ArrayList<BaseMetric>();
+		
 		for(BaseMetric metric:metrics) {
 			if (metric.getOrder() >= 0) {
 				metricsWithOrder.add(metric);
 			}
 			mapIndexToMetric.put(metric.getIndex(), metric);
+			mapIdToMetric.put(metric.getShortName(), metric);
 		}
 		
 		if (getMajorVersion() >= Constants.EXPERIMENT_SPARSE_VERSION) {
@@ -143,20 +146,12 @@ implements IMetricManager
 	
 	/*************************************************************************
 	 *	Returns the metric with a given internal name.
-	 *  If possible, do NOT call this method if the number of metrics is huge.
-	 *  Searching is O(n) unfortunately.
+	 *   
+	 *  @param shortName the short name (ID) of the metric 
 	 ************************************************************************/
-	public BaseMetric getMetric(String name)
+	public BaseMetric getMetric(String shortName)
 	{
-		final int size = metrics.size();
-
-		for (int i=0; i<size; i++) {
-
-			final BaseMetric metric = metrics.get(i);
-			if (metric.getShortName().equals(name))
-				return metrics.get(i);
-		}
-		return null;	
+		return mapIdToMetric.get(shortName);	
 	}
 	
 	@Override

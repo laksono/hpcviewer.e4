@@ -19,8 +19,6 @@ import edu.rice.cs.hpctraceviewer.ui.base.AbstractBaseItem;
 import edu.rice.cs.hpctraceviewer.ui.base.ITracePart;
 import edu.rice.cs.hpctraceviewer.ui.base.ITraceViewAction;
 
-import javax.annotation.PreDestroy;
-
 public class HPCTraceView extends AbstractBaseItem
 {
 	public static final String ID_PERSPECTIVE = "edu.rice.cs.hpctraceviewer.ui.perspective.main";
@@ -117,7 +115,6 @@ public class HPCTraceView extends AbstractBaseItem
 	}
 	
 	
-	@PreDestroy
 	public void preDestroy() {		
 	}
 	

@@ -36,6 +36,7 @@ import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.data.util.string.StringUtil;
 import edu.rice.cs.hpcsetting.fonts.FontManager;
 import edu.rice.cs.hpctraceviewer.ui.base.AbstractBaseTableViewer;
+import edu.rice.cs.hpctraceviewer.ui.base.ColorColumnLabelProvider;
 import edu.rice.cs.hpctraceviewer.ui.base.ITracePart;
 import edu.rice.cs.hpctraceviewer.ui.context.BaseTraceContext;
 import edu.rice.cs.hpctraceviewer.ui.internal.TraceEventData;
@@ -62,7 +63,7 @@ public class CallStackViewer extends AbstractBaseTableViewer
 	private final IEventBroker eventBroker;
 	private final ITracePart   tracePart;
 	private final TableViewerColumn viewerColumn;
-	private final ColumnColorLabelProvider colorLabelProvider ;
+	private final ColorLabelProvider colorLabelProvider ;
 	
 	private SpaceTimeDataController stData ;
 	private Listener selectionListener;
@@ -122,7 +123,7 @@ public class CallStackViewer extends AbstractBaseTableViewer
 		// add color column
         //------------------------------------------------
 		TableViewerColumn colorViewer = new TableViewerColumn(this, SWT.NONE);
-		colorLabelProvider = new ColumnColorLabelProvider();
+		colorLabelProvider = new ColorLabelProvider();
 		colorViewer.setLabelProvider(colorLabelProvider);
 				
 		TableColumn col = colorViewer.getColumn();
@@ -359,26 +360,19 @@ public class CallStackViewer extends AbstractBaseTableViewer
 	 * Label provider for Color of the procedure
 	 *
 	 *************************************************************/
-	static private class ColumnColorLabelProvider extends ColumnLabelProvider 
+	static private class ColorLabelProvider extends ColorColumnLabelProvider 
 	{
-		private final static String EMPTY = "";
 		ColorTable colorTable;
 		
 		@Override
-		public String getText(Object element) {
-			return EMPTY;
-		}
-		
-		
-		@Override
-		public Color getBackground(Object element) {
+		protected Color getColor(Event event, Object element) {
 			if (element != EMPTY_FUNCTION && 
 				element != null && 
 				element instanceof String) {
 				
 				return colorTable.getColor((String) element);
 			}
-			return null;
+			return event.display.getSystemColor(SWT.COLOR_WHITE);
 		}
 	}
 

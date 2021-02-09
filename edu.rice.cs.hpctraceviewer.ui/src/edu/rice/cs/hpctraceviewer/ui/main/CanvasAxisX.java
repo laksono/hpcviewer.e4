@@ -84,18 +84,25 @@ public class CanvasAxisX extends AbstractAxisCanvas
         // So Apparently the best way is to compute the height during the paint control :-(
         
 		FontData []fd = e.gc.getFont().getFontData();
-		int height = fd[0].getHeight();
 		
-		if (e.height > 0 && height > e.height-7) {
-			int heightAdapt = Math.min(e.height-7, height);
-			if (heightAdapt > 1) {
-				fd[0].setHeight(heightAdapt);
-				if (fontX != null && !fontX.isDisposed()) {
-					fontX.dispose();
-				}
-				fontX = new Font(e.display, fd);
-				e.gc.setFont(fontX);
+		final String text = "1,";
+		int height = e.gc.stringExtent(text).y;
+		
+		// the height of the font must be bigger than the height of the canvas minus ticks and empty spaces
+		final int space = TICK_BIG + 3;
+		
+		while (e.height > 0 && height > e.height-space) {
+			// the font is too big
+
+			int fontHeight = fd[0].getHeight() - 1;
+			fd[0].setHeight(fontHeight);
+			if (fontX != null && !fontX.isDisposed()) {
+				fontX.dispose();
 			}
+			fontX = new Font(e.display, fd);
+			e.gc.setFont(fontX);
+			
+			height = e.gc.stringExtent(text).y;
 		}
 
 		final ImageTraceAttributes attribute = data.getAttributes();

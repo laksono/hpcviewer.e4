@@ -21,8 +21,6 @@ import edu.rice.cs.hpctraceviewer.ui.main.HPCTraceView;
  *****************************************************/
 public class HPCDepthView extends AbstractBaseItem
 {
-	public static final String ID = "hpcdepthview.view";
-
 	private static final int VIEW_HEIGHT_HINT = 40;
 	
 	/** Paints and displays the detail view. */
@@ -75,4 +73,41 @@ public class HPCDepthView extends AbstractBaseItem
 		depthCanvas.updateView((SpaceTimeDataController) input);
 		depthCanvas.refresh();
 	}
+	
+	
+	
+	/****
+	 * Zoom out the depth: increase the depth so users can see more 
+	 */
+	public void zoomOut() {
+		depthCanvas.zoomOut();
+	}
+	
+	
+	/****
+	 * Zoom in the depth: decrease the depth so user can see more pixels
+	 */
+	public void zoomIn() {
+		depthCanvas.zoomIn();
+		 
+	}
+	
+	
+	/****
+	 * check if we can zoom out
+	 * @return true if it's feasible
+	 */
+	public boolean canZoomOut() {
+		return depthCanvas.canZoomOut();
+	}
+	
+	
+	/****
+	 * check if can zoom in
+	 * @return true if it's possible
+	 */
+	public boolean canZoomIn() {
+		return depthCanvas.canZoomIn();
+	}
+
 }

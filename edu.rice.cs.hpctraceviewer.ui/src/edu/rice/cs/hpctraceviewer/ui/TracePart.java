@@ -12,13 +12,17 @@ import javax.annotation.PostConstruct;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
@@ -45,6 +49,8 @@ import edu.rice.cs.hpctraceviewer.ui.preferences.TracePreferenceManager;
 import edu.rice.cs.hpctraceviewer.ui.statistic.HPCStatView;
 import edu.rice.cs.hpctraceviewer.ui.summary.HPCSummaryView;
 import edu.rice.cs.hpctraceviewer.ui.util.IConstants;
+import edu.rice.cs.hpctraceviewer.ui.util.Utility;
+import edu.rice.cs.hpcbase.ViewerDataEvent;
 
 import javax.annotation.PreDestroy;
 
@@ -75,6 +81,11 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 public class TracePart implements ITracePart, IPartListener, IPropertyChangeListener, EventHandler
 {
 	public static final String ID = "edu.rice.cs.hpctraceviewer.ui.partdescriptor.trace";
+	
+	private final static String LABEL_ZOOM_IN_Y = "zoom.in";
+	private final static String ICON_ZOOM_IN_Y  =  "platform:/plugin/edu.rice.cs.hpctraceviewer.ui/resources/zoom-in-process.png";
+	private final static String LABEL_ZOOM_OUT_Y = "zoom.out";
+	private final static String ICON_ZOOM_OUT_Y  =  "platform:/plugin/edu.rice.cs.hpctraceviewer.ui/resources/zoom-out-process.png";
 
 	private final HashMap<String, IUndoContext> mapLabelToContext;
 	
@@ -90,6 +101,8 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 	
 	private HPCStatView tbtmStatView;
 	private HPCBlameView tbtmBlameView;
+	
+	private ToolItem tiZoomIn, tiZoomOut;
 	
 	private SpaceTimeMiniCanvas miniCanvas;
 	
@@ -139,6 +152,44 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 		
 		tbtmSummaryView = new HPCSummaryView(tabFolderBottomLeft, SWT.NONE);
 		createTabItem(tbtmSummaryView, "Summary view", tabFolderBottomLeft, eventBroker);
+		
+		ToolBar toolbar = new ToolBar( tabFolderBottomLeft, SWT.FLAT );
+		
+		tiZoomIn  = createToolItem(toolbar, LABEL_ZOOM_IN_Y, ICON_ZOOM_IN_Y, "Zoom-in the depth");		
+		tiZoomOut = createToolItem(toolbar, LABEL_ZOOM_OUT_Y, ICON_ZOOM_OUT_Y, "Zoom-out the depth");
+		
+		tabFolderBottomLeft.setTopRight(toolbar);
+		tabFolderBottomLeft.setTabHeight(Math.max(toolbar.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, tabFolderBottomLeft.getTabHeight()));
+		
+		tabFolderBottomLeft.addSelectionListener(new SelectionListener() {
+			
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				boolean activateDepth = (e.item == tbtmDepthView);
+				tiZoomIn.setEnabled (activateDepth && tbtmDepthView.canZoomIn());
+				tiZoomOut.setEnabled(activateDepth && tbtmDepthView.canZoomOut());
+			}
+			
+			@Override
+			public void widgetDefaultSelected(SelectionEvent e) {}
+		});
+		
+		tiZoomIn.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				tbtmDepthView.zoomIn();
+				updateToolItem();
+			}
+		});
+		
+		tiZoomOut.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				tbtmDepthView.zoomOut();
+				updateToolItem();
+			}
+		});
+		
 		
 		// ---------------
 		// call stack
@@ -217,6 +268,21 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 	}
 	
 	
+	private void updateToolItem() {
+		tiZoomIn.setEnabled(tbtmDepthView.canZoomIn());
+		tiZoomOut.setEnabled(tbtmDepthView.canZoomOut());
+	}
+	
+	private ToolItem createToolItem(ToolBar toolbar, String label, String icon, String tooltip) {
+		
+		ToolItem toolitem = new ToolItem(toolbar, SWT.PUSH);
+		Image image = Utility.getImage(icon, label);
+		toolitem.setImage(image);
+		toolitem.setToolTipText(tooltip);
+		
+		return toolitem;
+	}
+	
 	private void createTabItem(AbstractBaseItem item, String title, CTabFolder parent, IEventBroker eventBroker) {
 		item.setText(title);
 
@@ -230,6 +296,10 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 	}
 	
 	
+	/***
+	 * Return the list of actions of this trace
+	 * @return
+	 */
 	public ITraceViewAction getActions() {
 		if (tbtmTraceView != null)
 			return tbtmTraceView.getActions();
@@ -293,7 +363,7 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 		if (eventBroker == null || partService == null)
 			return;
 		
-		if (experiment.getRootScope() == null)
+		if (experiment == null || experiment.getRootScope() == null)
 			return;
 		
 		try {
@@ -333,11 +403,13 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 			} else {
 				tbtmSummaryView.setAnalysisTool(new CpuBlameAnalysis(eventBroker));
 			}
+			updateToolItem();
 			
 		} catch (Exception e) {
 			Shell shell = Display.getDefault().getActiveShell();
 			MessageDialog.openError(shell, "Error in opening the database", e.getClass() + ":" + e.getMessage());
-			e.printStackTrace();
+			preDestroy();
+			partService.hidePart(part, true);
 		}
 	}
 
@@ -379,7 +451,16 @@ public class TracePart implements ITracePart, IPartListener, IPropertyChangeList
 
 	@Override
 	public void handleEvent(Event event) {
+		Object obj = event.getProperty(IEventBroker.DATA);
+		if (obj == null || experiment == null)
+			return;
+
+		ViewerDataEvent eventInfo = (ViewerDataEvent) obj;
+		if (experiment != eventInfo.experiment) 
+			return;
+
 		if (event.getTopic().equals(BaseConstants.TOPIC_HPC_REMOVE_DATABASE)) {
+			
 			// mark that this part will be close soon. Do not do any tasks
 			partService = null;
 			eventBroker = null;

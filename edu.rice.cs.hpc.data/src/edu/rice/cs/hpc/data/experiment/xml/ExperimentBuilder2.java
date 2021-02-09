@@ -117,13 +117,12 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 		case T_CALLPATH_PROFILE_DATA:	// @deprecated: semi old format. some data has this kind of tag
 		case T_SEC_FLAT_PROFILE_DATA:
 		case T_SEC_CALLPATH_PROFILE_DATA:
-			this.end_ProfileData();
 			// ok, this is ugly: we force the parent class to treat the end of this element
 			super.endElement(element);
 			break;
 			
 		case T_METRIC_TABLE:
-			this.end_MetricTable();
+			end_MetricTable();
 			break;
 
 		case T_METRIC_DB_TABLE:
@@ -148,7 +147,7 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	/*************************************************************************
 	 *	Finishes processing a profile element.
 	 ************************************************************************/
-	private void end_ProfileData()
+	private void rearrangeMetrics()
 	{
 		boolean is_raw_metric_only = true;
 		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
@@ -520,8 +519,9 @@ public class ExperimentBuilder2 extends BaseExperimentBuilder
 	 * finishes processing metric table
 	 *************************************************************************/
 	private void end_MetricTable() {
+		rearrangeMetrics();
+
 		final BaseExperimentWithMetrics exp = (BaseExperimentWithMetrics) experiment;
-		
 		exp.setMetrics(metricList);
 	}
 

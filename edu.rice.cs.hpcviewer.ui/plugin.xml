@@ -42,21 +42,5 @@
          </property>
       </product>
    </extension>
-   <extension
-         point="org.eclipse.core.expressions.definitions">
-      <definition
-            id="edu.rice.cs.hpcviewer.ui.definition.zoom">
-         <with
-               variable="org.eclipse.ui.selection">
-            <iterate
-                  ifEmpty="false"
-                  operator="or">
-               <instanceof
-                     value="edu.rice.cs.hpc.data.experiment.scope.Scope">
-               </instanceof>
-            </iterate>
-         </with>
-      </definition>
-   </extension>
 
 </plugin>

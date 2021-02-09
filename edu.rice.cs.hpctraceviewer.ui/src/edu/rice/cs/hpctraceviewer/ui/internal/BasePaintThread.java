@@ -44,10 +44,13 @@ public abstract class BasePaintThread implements Callable<List<ImagePosition>>
 	 * To retrieve the list of images, the caller needs to call the method get() from
 	 * {@link java.util.concurrent.Callable} 
 	 * 
+	 * @param stData SpaceTimeDataController
 	 * @param list : the queue of TimelineDataSet data. Use a thread-safe queue for multi-threads
 	 * @param numberOfTotalLines : number of total images or lines
-	 * @param device : the display device used to create images. Cannot be null
+	 * @param dataCollected AtomicInteger Number of collected data by BaseTimelineThread
+	 * @param currentPaint AtomicInteger Counter of number of consumed data for painting
 	 * @param width : the width of the view
+	 * @param monitor progress monitor
 	 */
 	public BasePaintThread( SpaceTimeDataController stData, Queue<TimelineDataSet> list, 
 			int numberOfTotalLines, AtomicInteger dataCollected, AtomicInteger currentPaint,

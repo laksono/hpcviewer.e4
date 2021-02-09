@@ -1,6 +1,8 @@
 package edu.rice.cs.hpctraceviewer.ui.main;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -10,6 +12,9 @@ import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 
+import edu.rice.cs.hpc.data.db.IdTuple;
+import edu.rice.cs.hpc.data.experiment.extdata.IBaseData;
+import edu.rice.cs.hpc.data.experiment.extdata.IFileDB.IdTupleOption;
 import edu.rice.cs.hpcsetting.preferences.PreferenceConstants;
 import edu.rice.cs.hpcsetting.preferences.ViewerPreferenceManager;
 import edu.rice.cs.hpctraceviewer.data.SpaceTimeDataController;
@@ -42,7 +47,7 @@ public class DetailViewPaint extends BaseViewPaint
 	final private int numLines;
 
 	private boolean debug;
-	
+	private List<IdTuple> listIdTuples; 
 	
 	/***
 	 * Create a job to paint the main canvas view
@@ -81,6 +86,9 @@ public class DetailViewPaint extends BaseViewPaint
 
 	@Override
 	protected boolean startPainting(int linesToPaint, int numThreads, boolean changedBounds) {
+		final IBaseData traceData = controller.getBaseData();
+		listIdTuples = traceData.getListOfIdTuples(IdTupleOption.BRIEF);
+
 		return true;
 	}
 
@@ -134,8 +142,31 @@ public class DetailViewPaint extends BaseViewPaint
 	}
 
 	@Override
-	protected void endPainting(boolean isCanceled) {
-		// TODO Auto-generated method stub
+	protected void endPainting(boolean isCanceled) {}
+
+	@Override
+	protected void endPreparationThread(BaseTimelineThread thread, int result) {
+		if (!debug)
+			return;
 		
+		Map<Integer, List<?>> m = thread.getInvalidData();
+		if (m == null || m.size()==0)
+			return;
+		
+		m.forEach((k,v) -> {
+			IdTuple idt = listIdTuples.get(k);
+			System.out.println(idt + " has invalid cpid: " + v);
+		});
+
+	}
+
+	@Override
+	protected void endDataPreparation(int numInvalidData) {
+
+		if (numInvalidData > 0) {
+			final String message = "Warning: " + numInvalidData + 
+					" sample(s) have invalid call-path ID.";
+			canvas.setMessage(message);
+		}
 	}
 }

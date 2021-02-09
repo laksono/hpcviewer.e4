@@ -1,10 +1,10 @@
-Installing hpcviewer
-====================
+Installing hpcviewer on Linux platform
+======================================
 
 * Uncompress the tar file 
 	tar xzf hpcviewer-......tgz.
 * Run install script:
-	install [hpctoolkit_installation_directory]
+	./install [hpctoolkit_installation_directory]
 
 This will install the hpcviewer executable and its components in 
 [hpctoolkit_installation_directory]
@@ -15,7 +15,6 @@ This will install the hpcviewer executable and its components in
 
 
 Notes
-====================
 
 * By default, the configuration files are located in 
   $USER/.hpctoolkit/hpcviewer/<platform>/

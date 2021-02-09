@@ -1,6 +1,8 @@
 package edu.rice.cs.hpctraceviewer.data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.eclipse.swt.graphics.Color;
 import org.slf4j.Logger;
@@ -22,7 +24,8 @@ public abstract class DataPreparation
 {
 	final protected DataLinePainting data;
 	final private HashMap<Integer, Integer>mapInvalidData;
-		
+	final private List<Integer> listInvalidData;
+	
 	/****
 	 * Abstract class constructor to paint a line (whether it's detail view or depth view) 
 	 * @param data a DataLinePainting object
@@ -31,6 +34,7 @@ public abstract class DataPreparation
 	{
 		this.data = data;
 		mapInvalidData = new HashMap<Integer, Integer>();
+		listInvalidData = new ArrayList<Integer>();
 	}
 	
 	/**Painting action
@@ -93,6 +97,7 @@ public abstract class DataPreparation
 			int end = index;
 
 			final Color currColor = succColor;
+			final String procName = succFunction;
 			
 			while (still_the_same && (++indexSucc <= last_ptl_index))
 			{
@@ -116,15 +121,13 @@ public abstract class DataPreparation
 				} else {
 					int cpid = data.ptl.getCpid(indexSucc);
 					Integer num = mapInvalidData.get(cpid);
-					if (num != null) {
-						num++;
-					} else {
-						num = 1;
-						logger.debug("Invalid cpid: " + cpid);
+					if (num == null) {
+						listInvalidData.add(cpid);
+						num = 0;
 					}
-					mapInvalidData.put(cpid, num);
-					
+					num++;
 					num_invalid_cp++;
+					mapInvalidData.put(cpid, num);
 				}
 			}
 			
@@ -155,15 +158,15 @@ public abstract class DataPreparation
 				succSampleMidpoint = (int) Math.max(0, ((data.ptl.getTime(end)-data.begTime)/data.pixelLength)); 
 			}
 			
-			finishLine(currSampleMidpoint, succSampleMidpoint, currDepth, currColor, end - index + 1);
+			finishLine(procName, currSampleMidpoint, succSampleMidpoint, currDepth, currColor, end - index + 1);
 			index = end;
 		}
 		return num_invalid_cp;
 	}
 	
 	
-	public HashMap<Integer, Integer> getInvalidData() {
-		return mapInvalidData;
+	public List<Integer> getInvalidData() {
+		return listInvalidData;
 	}
 	
 	 //This is potentially vulnerable to overflows but I think we are safe for now.
@@ -184,5 +187,5 @@ public abstract class DataPreparation
 	 * @param functionName : name of the function (for coloring purpose)
 	 * @param sampleCount : the number of "samples"
 	 */
-	public abstract void finishLine(int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount);
+	public abstract void finishLine(String proc, int currSampleMidpoint, int succSampleMidpoint, int currDepth, Color color, int sampleCount);
 }

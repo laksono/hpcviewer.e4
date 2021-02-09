@@ -3,7 +3,9 @@ package edu.rice.cs.hpctraceviewer.ui.internal;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorCompletionService;
@@ -37,12 +39,13 @@ import edu.rice.cs.hpctraceviewer.ui.util.Utility;
  *******************************************************/
 public abstract class BaseViewPaint extends Job
 {
+
+	final protected ISpaceTimeCanvas canvas;
+	private Map<Future<Integer>, BaseTimelineThread> mapFutureToTask;
+
 	protected boolean changedBounds;
 		
 	protected SpaceTimeDataController controller;
-
-	final private ISpaceTimeCanvas canvas;
-	
 
 	/**
 	 * Constructor to paint a view (trace and depth view)
@@ -151,6 +154,8 @@ public abstract class BaseViewPaint extends Job
 		final double xscale = canvas.getScalePixelsPerTime();
 		final double yscale = Math.max(canvas.getScalePixelsPerRank(), 1);
 		
+		mapFutureToTask = new HashMap<Future<Integer>, BaseTimelineThread>(num_threads);
+		
 		ExecutorService threadExecutor = Executors.newCachedThreadPool();
 		ExecutorCompletionService<Integer> ecs = new ExecutorCompletionService<Integer>(threadExecutor);
 						
@@ -163,7 +168,8 @@ public abstract class BaseViewPaint extends Job
 				// we should just warning the user instead of scaring them with
 				// error message and backtrace
 
-				ecs.submit(thread);
+				Future<Integer> f = ecs.submit(thread);
+				mapFutureToTask.put(f, thread);
 			
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -272,31 +278,32 @@ public abstract class BaseViewPaint extends Job
 	private boolean waitDataPreparationThreads(ExecutorCompletionService<Integer> ecs, 
 			ArrayList<Integer> result, int launch_threads, IProgressMonitor monitor)
 	{
-		int num_invalid_samples = 0;
+		int num_invalid_samples = 0;		
+		
 		for (int i=0; i<launch_threads; i++)
 		{
 			if (monitor.isCanceled())
 				return false;
 			
 			try {
-				Integer linenum = ecs.take().get();
+				Future<Integer> f = ecs.take();
+				Integer linenum = f.get();
 				if (linenum == null)
 					return false;
-				num_invalid_samples += linenum.intValue();
 				
+				num_invalid_samples += linenum.intValue();				
 				result.add(linenum);
 
+				BaseTimelineThread t = mapFutureToTask.get(f);
+
+				endPreparationThread(t, linenum.intValue());
+				
 			} catch (Exception e) {
 				// we don't need to show exception message everywhere unless if we are in develop mode
-
 				return false;
 			}
 		}
-		if (num_invalid_samples > 0) {
-			final String message = "Warning: " + num_invalid_samples + 
-					" sample(s) have invalid call-path ID.";
-			canvas.setMessage(message);
-		}
+		endDataPreparation(num_invalid_samples);
 		return true;
 	}
 
@@ -407,4 +414,8 @@ public abstract class BaseViewPaint extends Job
 	 */
 	abstract protected BasePaintThread getPaintThread( Queue<TimelineDataSet> queue, int numLines, 
 													   int width, IProgressMonitor monitor);
+
+	abstract protected void endPreparationThread(BaseTimelineThread thread, int result);
+	
+	abstract protected void endDataPreparation(int numInvalidData);
 }

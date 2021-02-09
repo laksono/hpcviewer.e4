@@ -57,7 +57,6 @@ abstract public class DataCommon
 			readHeader(file, fis, buffer);
 			
 			// read the section headers
-			numSections = (short) (numSections - 2);
 			buffer.clear();
 			buffer = ByteBuffer.allocate(numSections * 16);
 			numBytes = channel.read(buffer);

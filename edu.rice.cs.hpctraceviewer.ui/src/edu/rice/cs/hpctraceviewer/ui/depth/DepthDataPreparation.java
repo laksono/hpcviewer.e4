@@ -18,32 +18,31 @@ public class DepthDataPreparation extends DataPreparation {
 	 * list of data to be painted on the depth view
 	 */
 	final private TimelineDataSet dataset;
-	
+	private final int minDepth;
+
 	/****
 	 * Constructor to prepare data
-	 * 
-	 * @param _colorTable
-	 * @param _ptl
-	 * @param _begTime
-	 * @param _depth
-	 * @param _height
-	 * @param _pixelLength
-	 * @param _usingMidpoint
+	 * @param data pixel information from {@code DataLinePainting}
+	 * @param minDepth
+	 * @param visibleDepths 
 	 */
-	public DepthDataPreparation(DataLinePainting data) {
+	public DepthDataPreparation(DataLinePainting data, int minDepth, int visibleDepths) {
 		
 		super(data);
 		dataset = new TimelineDataSet(data.ptl.line(), data.ptl.size(), data.height);
+		this.minDepth = minDepth;
 	}
 
 	@Override
-	public void finishLine(int currSampleMidpoint, int succSampleMidpoint,
+	public void finishLine(String proc, int currSampleMidpoint, int succSampleMidpoint,
 			int currDepth, Color color, int sampleCount) {
-
-		BaseDataVisualization data = new BaseDataVisualization(currSampleMidpoint, 
-				succSampleMidpoint, currDepth, color);
 		
-		dataset.add(data);
+		if (dataset.getLineNumber() + minDepth < currDepth) {
+			BaseDataVisualization data = new BaseDataVisualization(currSampleMidpoint, 
+					succSampleMidpoint, currDepth, color);
+			
+			dataset.add(data);
+		}
 	}
 	
 	/***
@@ -52,8 +51,6 @@ public class DepthDataPreparation extends DataPreparation {
 	 * @return
 	 */
 	public TimelineDataSet getList() {
-		
 		return dataset;
 	}
-
 }

@@ -3,9 +3,9 @@ package edu.rice.cs.hpc.data.experiment;
 import java.io.File;
 import java.io.InputStream;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
-import org.eclipse.collections.api.list.MutableList;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
@@ -56,7 +56,7 @@ public abstract class BaseExperiment implements IExperiment
 	private BaseTraceAttribute traceAttribute = new TraceAttribute();
 
 	public int min_cctid, max_cctid;
-	private MutableList<Scope> listOfScopes;
+	private List<Scope> listOfScopes;
 
 	/***
 	 * the root scope of the experiment
@@ -391,12 +391,12 @@ public abstract class BaseExperiment implements IExperiment
 	}
 	
 	
-	public MutableList<Scope> getListOfScopes() {
+	public List<Scope> getListOfScopes() {
 		return listOfScopes;
 	}
 
 
-	public void setListOfScopes(MutableList<Scope> listOfScopes) {
+	public void setListOfScopes(List<Scope> listOfScopes) {
 		this.listOfScopes = listOfScopes;
 	}
 

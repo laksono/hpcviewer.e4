@@ -2,6 +2,7 @@ package edu.rice.cs.hpcviewer.ui.internal;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.eclipse.jface.viewers.ILazyTreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -25,16 +26,22 @@ public abstract class AbstractContentProvider
 	implements ILazyTreeContentProvider, ISortContentProvider 
 {
     final private TreeViewer viewer;
-	final private HashMap<Integer, Object[]> sort_scopes;
 	final private ScopeComparator comparator;
+	
+	/** Cache to store the sorted children.
+	 *  Every time Jface table reconstruct a table item, it requires
+	 *  every item to check the children a lot and sometimes repeatedly.
+	 *  To avoid such re-sorting the children, we need to cache them 
+	 *  in a hash map here. It will require more memory but we save time.*/
+	final private Map<Scope, Object[]> sort_scopes;
 	
 	private TreeViewerColumn sort_column = null;
 	private int sort_direction 			 = 0;
 
     public AbstractContentProvider(TreeViewer viewer) {
     	this.viewer = viewer;
-		sort_scopes = new HashMap<Integer, Object[]>();
 		comparator  = new ScopeComparator();
+		sort_scopes = new HashMap<Scope, Object[]>();
     }
 
 
@@ -53,22 +60,8 @@ public abstract class AbstractContentProvider
 
 	@Override
 	public void updateElement(Object parent, int index) {
-
-		int child_position = index;
-		/*
-		 * this part will cause stack overflow on Java 11
-		 * 
-		if (parent == viewer.getInput()) {
-			if (index == 0)
- 				return;
-
-			// if the parent is a root, the first row is a header
-			// this header row is not counted as a child 
-			// issue #11: force the index to be 0. We cannot allow negative index.
-			child_position = Math.max(0, index-1);
-		}*/
 		
-		Object element = getSortedChild( (Scope)parent, child_position);
+		Object element = getSortedChild( (Scope)parent, index);
 		if (element != null) {
 			viewer.getTree().setRedraw(false);
 			viewer.replace(parent, index, element);
@@ -81,7 +74,7 @@ public abstract class AbstractContentProvider
 	public void updateChildCount(Object element, int currentChildCount) {
 		assert(element instanceof Scope); 
 
-		Object []children = getSortedChildren((Scope)element);
+		Object []children = getRawChildren((Scope)element);
 		int length = (children == null ? 0 : children.length);
 		try {
 			viewer.setChildCount(element, length);
@@ -97,8 +90,7 @@ public abstract class AbstractContentProvider
     	
     	this.sort_column    = sort_column;
     	this.sort_direction = direction;
-    	
-		sort_scopes.clear();
+    	sort_scopes.clear();
 
     	// perform the sort by refreshing the viewer
     	// this refresh method will force the table to recompute the children
@@ -137,31 +129,42 @@ public abstract class AbstractContentProvider
      * @return
      */
     public Object[] getSortedChildren(Scope parent) {
+		// check if this parent has already sorted children or not
+    	// if yet, we look at the cache and return the children.
+    	Object [] children = sort_scopes.get(parent);
+    	if (children != null)
+    		return children;
+    	
+    	children = getRawChildren(parent);
+
+    	if (sort_column == null || children == null)
+    		return null;
+    	
+		BaseMetric metric = (BaseMetric) sort_column.getColumn().getData();
+		comparator.setMetric(metric);    		
+		comparator.setDirection(sort_direction);
 		
+		Arrays.sort(children, comparator);
+		
+		// store to the cache
+		// for the sake of performance optimization, we sacrifice the memory
+		sort_scopes.put(parent, children);
+		
+    	return children;
+	}
+	
+    
+    private Object[] getRawChildren(Scope parent) {
+    	
     	if (parent instanceof ProcedureScope) {
     		ProcedureScope proc = (ProcedureScope) parent;
     		if (proc.toBeElided())
     			return null;
     	}
-		int hash = System.identityHashCode(parent);
-    	Object [] children = sort_scopes.get(hash);
-    	
-    	if (children == null && sort_column != null) {
-    		children = getChildren(parent);
-    		if (children == null)
-    			return null;
-    		
-    		BaseMetric metric = (BaseMetric) sort_column.getColumn().getData();
-    		comparator.setMetric(metric);    		
-    		comparator.setDirection(sort_direction);
-    		
-    		Arrays.sort(children, comparator);
-    		
-    		sort_scopes.put(hash, children);
-    	}
-    	return children;
-	}
-	
+    	return getChildren(parent);
+    }
+    
+    
     /***
      * Retrieve a child of a parent for a specific sorted index.
      * 

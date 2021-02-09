@@ -16,7 +16,6 @@ import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.di.annotations.Creatable;
 import org.eclipse.e4.core.di.annotations.Optional;
 import org.eclipse.e4.core.services.events.IEventBroker;
@@ -48,13 +47,16 @@ import edu.rice.cs.hpc.data.trace.BaseTraceAttribute;
 import edu.rice.cs.hpc.data.util.Constants;
 import edu.rice.cs.hpc.filter.service.FilterMap;
 import edu.rice.cs.hpcbase.BaseConstants;
+import edu.rice.cs.hpcbase.ViewerDataEvent;
 import edu.rice.cs.hpcbase.map.UserInputHistory;
 import edu.rice.cs.hpcbase.ui.IMainPart;
+import edu.rice.cs.hpctraceviewer.data.AbstractDBOpener;
+import edu.rice.cs.hpctraceviewer.data.local.LocalDBOpener;
 import edu.rice.cs.hpctraceviewer.ui.TracePart;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
 import edu.rice.cs.hpcviewer.ui.experiment.ExperimentManager;
 import edu.rice.cs.hpcviewer.ui.handlers.RecentDatabase;
-import edu.rice.cs.hpcviewer.ui.internal.ViewerDataEvent;
+import edu.rice.cs.hpcviewer.ui.util.ElementIdManager;
 
 /***
  * <b>
@@ -224,18 +226,13 @@ public class DatabaseCollection
 		// Corner case for TWM window manager: sometimes the processing is faster
 		// than the UI, and thus Eclipse doesn't provide any context or any child
 		// at this stage. Maybe we should wait until it's ready?
+		// 
+		// using asyncExec we hope Eclipse will delay the processing until the UI 
+		// is ready. This doesn't guarantee anything, but works in most cases :-(
 
-		try {
+		sync.asyncExec(()-> {
 			showPart(experiment, application, modelService, service);
-		} catch (Exception e) {
-			String msg = "Cannot show a view: ";
-			
-			IEclipseContext activeWindowContext = application.getContext().getActiveChild();;
-			if (activeWindowContext == null) {
-				msg += "No window context is active";
-			}
-			statusReporter.error(msg, e);
-		}
+		});
 	}
 	
 
@@ -246,8 +243,10 @@ public class DatabaseCollection
 	 * @param application
 	 * @param service
 	 * @param parentId
+	 * 
+	 * @return int
 	 */
-	private void showPart( BaseExperiment experiment, 
+	private int showPart( BaseExperiment experiment, 
 						   MApplication   application, 
 						   EModelService  modelService,
 						   EPartService   service) {
@@ -261,10 +260,14 @@ public class DatabaseCollection
 		
 		MWindow  window = application.getSelectedElement();
 		if (window == null) {
-			MessageDialog.openError(Display.getDefault().getActiveShell(), 
-									"Error", 
-									"Internal SWT: No active window");
-			return;
+			// window is not active yet
+			
+			// using asyncExec we hope Eclipse will delay the processing until the UI 
+			// is ready. This doesn't guarantee anything, but works in most cases :-(
+			sync.asyncExec(()-> {
+				showPart(experiment, application, modelService, service);
+			});
+			return -1;
 		}
 
 		List<MStackElement> list = null;
@@ -311,12 +314,17 @@ public class DatabaseCollection
 			MessageDialog.openError(Display.getDefault().getActiveShell(), 
 									"Fail to get the view", 
 									"hpcviewer is unable to retrieve the view. Please try again");
-			return;
+			return 0;
 		}
 		
 		// has to set the element Id before populating the view
-		//String elementID = ElementIdManager.getElementId(experiment);
-		//part.setElementId(elementID);
+		// this is to avoid an issue where a stack cannot store parts of the same elementId
+		// If there are two parts have the same elementID, when one is moved to the same stack.
+		// it will remove the other part.
+		
+		String elementID = "P." + ElementIdManager.getElementId(experiment);
+		part.setElementId(elementID);
+
 		view.setInput(part, experiment);
 
 		//----------------------------------------------------------------
@@ -336,10 +344,24 @@ public class DatabaseCollection
 		//----------------------------------------------------------------
 		BaseTraceAttribute traceAtt = experiment.getTraceAttribute();
 		if (traceAtt != null && traceAtt.dbTimeMax > 0) {
-			MPart tracePart = service.createPart(TracePart.ID);
+			try {
+				AbstractDBOpener dbOpener = new LocalDBOpener(null, experiment);
+				if (dbOpener.getVersion()<=0) {
+					return 1;
+				}
+			} catch (Exception e) {
+				return 0;
+			}
+
+			MPart tracePart  = service.createPart(TracePart.ID);
 			MPart createPart = service.showPart(tracePart, PartState.CREATE);
 			
 			if (createPart != null) {
+				// need to set the element id to avoid the same issue with the profile view
+				// (see the comment at line 320-323)
+				elementID = "T." + ElementIdManager.getElementId(experiment);
+				createPart.setElementId(elementID);
+
 				list.add(createPart);
 				
 				Object objTracePart = createPart.getObject();
@@ -348,6 +370,7 @@ public class DatabaseCollection
 				}
 			}
 		}
+		return 1;
 	}
 	
 	

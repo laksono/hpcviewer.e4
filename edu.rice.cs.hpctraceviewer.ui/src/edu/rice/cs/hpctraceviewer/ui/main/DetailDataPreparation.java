@@ -13,13 +13,7 @@ public class DetailDataPreparation extends DataPreparation {
 	/*****
 	 * Constructor for preparing data to paint on the space-time canvas
 	 * 
-	 * @param _colorTable
-	 * @param _ptl
-	 * @param _begTime
-	 * @param _depth
-	 * @param _height
-	 * @param _pixelLength
-	 * @param _usingMidpoint
+	 * @param data a DataLinePainting object
 	 */
 	public DetailDataPreparation(DataLinePainting data) 
 	{
@@ -28,7 +22,7 @@ public class DetailDataPreparation extends DataPreparation {
 	}
 
 	@Override
-	public void finishLine(int currSampleMidpoint, int succSampleMidpoint,
+	public void finishLine(String proc, int currSampleMidpoint, int succSampleMidpoint,
 			int currDepth, Color color, int sampleCount) {
 
 		final DetailDataVisualization data = new DetailDataVisualization(currSampleMidpoint, 

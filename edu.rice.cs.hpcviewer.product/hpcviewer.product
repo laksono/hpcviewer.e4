@@ -33,7 +33,10 @@ hpcviewer is part of Rice University&apos;s HPCToolkit project. Development of H
       <linux icon="/edu.rice.cs.hpcviewer.ui/resources/hpcviewer-icon-32x32-32bit.xpm"/>
       <macosx icon="/edu.rice.cs.hpcviewer.ui/resources/hpcviewer.icns"/>
       <win useIco="false">
-         <bmp/>
+         <bmp
+            winSmallHigh="/edu.rice.cs.hpcviewer.ui/resources/hpcviewer-icon-16x16-32bit.bmp"
+            winMediumHigh="/edu.rice.cs.hpcviewer.ui/resources/hpcviewer-icon-32x32-32bit.bmp"
+            winLargeHigh="/edu.rice.cs.hpcviewer.ui/resources/hpcviewer-icon-48x48-32bit.bmp"/>
       </win>
    </launcher>
 

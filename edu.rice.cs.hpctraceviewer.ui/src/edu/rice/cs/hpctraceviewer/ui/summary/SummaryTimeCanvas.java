@@ -174,11 +174,12 @@ public class SummaryTimeCanvas extends AbstractTimeCanvas implements IOperationH
 		buffer.setBackground(Constants.COLOR_WHITE);
 		buffer.fillRectangle(0, 0, viewWidth, viewHeight);
 
-		int width  = detailData.width / zoomFactor;
-		int height = detailData.height / zoomFactor;
+		float width  = detailData.width / zoomFactor;
+		float height = detailData.height / zoomFactor;
 
-		float yScale = (float) viewHeight / (float) height;
-		float xScale = ((float) viewWidth / (float) width);
+		float yScale = (float) viewHeight / height;
+		float xScale = ((float) viewWidth / width);
+
 		int xOffset = 0;
 		
 		mapPixelToPercent.clear();
@@ -273,7 +274,7 @@ public class SummaryTimeCanvas extends AbstractTimeCanvas implements IOperationH
 			}
 			xOffset = Math.round(xOffset + xScale);
 		}
-		totPixels = width * height;
+		totPixels = (int) (width * height);
 
 		buffer.dispose();
 

@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.eclipse.collections.api.list.MutableList;
-import org.eclipse.collections.impl.factory.Lists;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.ExperimentConfiguration;
@@ -44,9 +42,8 @@ import edu.rice.cs.hpc.data.util.IUserData;
  * 
  * @see ExperimentBuilder2 for building experiment with metrics
  */
-public class BaseExperimentBuilder extends Builder {
-
-	
+public class BaseExperimentBuilder extends Builder 
+{	
 	protected final static String ATTRIBUTE_LINE		= "l";
 	protected final static String ATTRIBUTE_NAME 		= "n";
 	protected final static String ATTRIBUTE_FILENAME 	= "f";
@@ -71,14 +68,6 @@ public class BaseExperimentBuilder extends Builder {
 	/** The experiment to own parsed objects. */
 	protected BaseExperiment experiment;
 
-	/** A stack to keep track of scope nesting while parsing. */
-	protected Stack<Scope> scopeStack;
-
-	/** The current source file while parsing. */
-	protected Stack<SourceFile> srcFileStack;
-	
-	private Stack<RootScope> rootStack;
-
 	private boolean csviewer;
 	
 	final private IUserData<String, String> userData;
@@ -87,14 +76,32 @@ public class BaseExperimentBuilder extends Builder {
 	protected Token2.TokenXML elemInfoState = TokenXML.T_INVALID_ELEMENT_NAME;
 
 	//--------------------------------------------------------------------------------------
-	private HashMap<Integer, String> 			hashProcedureTable;
-	private HashMap<Integer, LoadModuleScope> 	hashLoadModuleTable;
-	private HashMap<Integer, SourceFile> 		hashSourceFileTable;
+	// stacks
+	//--------------------------------------------------------------------------------------
+
+	/** A stack to keep track of scope nesting while parsing. */
+	protected Stack<Scope> scopeStack;
+
+	/** The current source file while parsing. */
+	protected Stack<SourceFile> srcFileStack;
 	
-	private HashMap<Integer /*id*/, Integer /*status*/>	  statusProcedureMap;
+	private Stack<RootScope> rootStack;
+
+	//--------------------------------------------------------------------------------------
+	// hash map
+	//--------------------------------------------------------------------------------------
+	private final HashMap<Integer, String> 			hashProcedureTable;
+	private final HashMap<Integer, LoadModuleScope> hashLoadModuleTable;
+	private final HashMap<Integer, SourceFile> 		hashSourceFileTable;
+	
+	private final HashMap<Integer /*id*/, Integer /*status*/>	  statusProcedureMap;
 
 	private final Map<Integer, CallPath> mapCpidToCallpath;
 	
+
+	//--------------------------------------------------------------------------------------
+	// trace information
+	//--------------------------------------------------------------------------------------
 	private int max_depth = 0;
 	
 	private int min_cctid = Integer.MAX_VALUE;
@@ -103,7 +110,7 @@ public class BaseExperimentBuilder extends Builder {
 	private int current_depth = 0;
 	
 	private boolean removeInvisibleProcedure = false;
-	private MutableList<Scope> listOfScope;
+	private List<Scope> listOfScope;
 	
 	//=============================================================
 	
@@ -134,7 +141,7 @@ public class BaseExperimentBuilder extends Builder {
 		statusProcedureMap  = new HashMap<Integer, Integer>();
 		
 		mapCpidToCallpath   = new HashMap<>();
-		listOfScope = Lists.mutable.empty();
+		listOfScope = new ArrayList<Scope>();
 		
 		// parse action data structures
 		this.scopeStack   = new Stack<Scope>();
@@ -1345,16 +1352,19 @@ public class BaseExperimentBuilder extends Builder {
 			paths.add(new File("compile"));
 			this.configuration.setSearchPaths(paths);
 		}
-
+		dispose();
 	}
 
-	
-
-	
+		
 	//--------------------------------------------------------------------------------
 	// Utilities
 	//--------------------------------------------------------------------------------
 
+	private void dispose() {
+		hashLoadModuleTable.clear();
+		hashProcedureTable.clear();
+		hashSourceFileTable.clear();
+	}
 	
 	private String getProcedureName(String sProcIndex) {
 		String sProcName = PROCEDURE_UNKNOWN;
@@ -1397,7 +1407,6 @@ public class BaseExperimentBuilder extends Builder {
 	
 	/*************************************************************************
 	 * Class to treat a string of line or range of lines into two lines: first line and last line 
-	 * @author laksonoadhianto
 	 *
 	 ************************************************************************/
 	static private class StatementRange {
@@ -1421,5 +1430,4 @@ public class BaseExperimentBuilder extends Builder {
 		public int getFirstLine( ) { return this.firstLn; }
 		public int getLastLine( ) { return this.lastLn; }
 	}
-
 }

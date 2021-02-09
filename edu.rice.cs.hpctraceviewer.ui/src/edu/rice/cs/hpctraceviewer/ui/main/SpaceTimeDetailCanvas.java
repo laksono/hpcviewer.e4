@@ -907,9 +907,12 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 	
     @Override
 	public void saveConfiguration() {
-		FileDialog saveDialog;
-		saveDialog = new FileDialog(getShell(), SWT.SAVE);
+    	if (stData == null)
+    		return;
+    	
+		FileDialog saveDialog = new FileDialog(getShell(), SWT.SAVE);
 		saveDialog.setText("Save View Configuration");
+		saveDialog.setFilterPath(stData.getExperiment().getDefaultDirectory().getAbsolutePath());
 		String fileName = "";
 		boolean validSaveFileFound = false;
 		while(!validSaveFileFound)
@@ -933,7 +936,10 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 					//if they select yes, validSaveFileFound = true;
 					//if they select no, validSaveFileFound = false;
 
-					validSaveFileFound = MessageDialog.openConfirm(getShell(), "File exists", "This file path already exists.\nDo you want to overwrite this save file?");
+					validSaveFileFound = MessageDialog.openConfirm(
+											getShell(), 
+											"File exists", 
+											"This file path already exists.\nDo you want to overwrite this save file?");
 				}
 			}
 		}
@@ -960,9 +966,12 @@ public class SpaceTimeDetailCanvas extends AbstractTimeCanvas
 
 	@Override
 	public void openConfiguration() {
-		FileDialog openDialog;
-		openDialog = new FileDialog(getShell(), SWT.OPEN);
+		if (stData == null)
+			return;
+		
+		FileDialog openDialog = new FileDialog(getShell(), SWT.OPEN);
 		openDialog.setText("Open View Configuration");
+		openDialog.setFilterPath(stData.getExperiment().getDefaultDirectory().getAbsolutePath());
 		String fileName = "";
 		boolean validFrameFound = false;
 		while(!validFrameFound)

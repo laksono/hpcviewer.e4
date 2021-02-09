@@ -132,7 +132,7 @@ public abstract class AbstractGraphViewer extends CTabItem implements IUpperPart
 
 		// Pick the color of the text indicating sample depth. 
 		// If the background is sufficiently light, pick dark blue, otherwise white
-		Color fg = display.getSystemColor(SWT.COLOR_DARK_BLUE);
+		Color fg = display.getSystemColor(SWT.COLOR_BLUE);
 		
 		if (bg.getRed()+bg.getBlue()+bg.getGreen() <= BaseConstants.DARKEST_COLOR_FOR_BLACK_TEXT)
 			fg = display.getSystemColor(SWT.COLOR_WHITE);

@@ -2,6 +2,8 @@ package edu.rice.cs.hpctraceviewer.ui.internal;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +40,7 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 	final private Queue<TimelineDataSet> queue;
 	final private AtomicInteger currentLine;
 	final protected IProgressMonitor monitor;
-	final protected HashMap<Integer, Integer> mapInvalidData;
+	final protected Map<Integer, List<?>> mapInvalidData;
 
 	public BaseTimelineThread( SpaceTimeDataController stData,
 							   double scaleY, 
@@ -52,7 +54,7 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 		this.currentLine   = currentLine;
 		this.monitor 	   = monitor;
 		
-		mapInvalidData = new HashMap<Integer, Integer>();
+		mapInvalidData = new HashMap<Integer, List<?>>();
 	}
 	
 	@Override
@@ -97,8 +99,8 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 				int num = dataTo.collect();
 				if (num > 0) {
 					num_invalid_samples += num;
-					HashMap<Integer, Integer> mapInvalid = dataTo.getInvalidData();
-					mapInvalidData.putAll(mapInvalid);
+					List<Integer> listInvalid = dataTo.getInvalidData();
+					mapInvalidData.put(trace.getProcessNum(), listInvalid);
 				}
 				
 				final TimelineDataSet dataSet = dataTo.getList();
@@ -127,7 +129,7 @@ public abstract class BaseTimelineThread implements Callable<Integer> {
 		return Integer.valueOf(num_invalid_samples);
 	}
 
-	public HashMap<Integer, Integer> getInvalidData() {
+	public Map<Integer, List<?>> getInvalidData() {
 		return mapInvalidData;
 	}
 	

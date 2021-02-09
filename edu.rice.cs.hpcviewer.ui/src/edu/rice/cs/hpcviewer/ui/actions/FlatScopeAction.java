@@ -73,7 +73,7 @@ public class FlatScopeAction
 		}
 		if(hasKids) {
 			if (objFlattenedNode.hasChildren()) {
-				pushElementStates();
+				//pushElementStates();
 				
 				stackFlatNodes.push(objParentNode);
 
@@ -105,7 +105,7 @@ public class FlatScopeAction
 		if(objParentNode != null) {
 			this.treeViewer.setInput(objParentNode);
 			
-			popElementStates();
+			//popElementStates();
 			
 			objParentNode.setParent(null);
 		}

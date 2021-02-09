@@ -1,15 +1,10 @@
 package edu.rice.cs.hpctraceviewer.ui.callstack;
 
-import java.io.IOException;
-import java.net.URL;
-
-import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.events.ModifyEvent;
@@ -27,9 +22,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.rice.cs.hpctraceviewer.data.SpaceTimeDataController;
 import edu.rice.cs.hpctraceviewer.data.timeline.ProcessTimelineService;
 import edu.rice.cs.hpctraceviewer.data.util.Constants;
@@ -37,6 +29,7 @@ import edu.rice.cs.hpctraceviewer.ui.base.AbstractBaseItem;
 import edu.rice.cs.hpctraceviewer.ui.base.ITracePart;
 import edu.rice.cs.hpctraceviewer.ui.internal.TraceEventData;
 import edu.rice.cs.hpctraceviewer.ui.util.IConstants;
+import edu.rice.cs.hpctraceviewer.ui.util.Utility;
 
 
 /**A view for displaying the call path viewer and minimap.*/
@@ -94,7 +87,7 @@ public class HPCCallStackView extends AbstractBaseItem implements EventHandler
 		final Label lblDepth = new Label(depthArea, SWT.LEFT);
 		lblDepth.setText("Depth: ");
 		
-		depthEditor = new Spinner(depthArea, SWT.EMBEDDED);
+		depthEditor = new Spinner(depthArea, SWT.BORDER);
 		depthEditor.setMinimum(0);
 		depthEditor.setPageIncrement(1);
 		
@@ -107,7 +100,7 @@ public class HPCCallStackView extends AbstractBaseItem implements EventHandler
 		maxDepthButton = new Button(depthArea, 0);		
 		maxDepthButton.setEnabled(false);
 		
-		Image image = getImage(MAX_DEPTH_FILE, ICON_MAX_DEPTH);
+		Image image = Utility.getImage(MAX_DEPTH_FILE, ICON_MAX_DEPTH);
 		maxDepthButton.setImage(image);
 
 		GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.CENTER).applyTo(maxDepthButton);
@@ -245,33 +238,6 @@ public class HPCCallStackView extends AbstractBaseItem implements EventHandler
 		return enableAction;
 	}
 	
-	
-	/****
-	 * Retrieve an image based on the registry label, or if the image
-	 * is not in the registry, load it from file URL
-	 * 
-	 * @param fileURL the URL
-	 * @param label the registry label
-	 * 
-	 * @return image, null if the file doesn't exist
-	 */
-	private Image getImage(String fileURL, String label) {
-		
-		Image image = JFaceResources.getImageRegistry().get(label);
-		if (image != null)
-			return image;
-		
-		try {
-			URL url = FileLocator.toFileURL(new URL(fileURL));
-			image = new Image(getDisplay(), url.getFile());
-			JFaceResources.getImageRegistry().put(ICON_MAX_DEPTH, image);
-
-		} catch (IOException e1) {
-			Logger logger = LoggerFactory.getLogger(getClass());
-			logger.error("Unable to get the icon file: " + fileURL, e1);
-		}
-		return image;
-	}
 
 	@Override
 	public void setInput(Object input) {
