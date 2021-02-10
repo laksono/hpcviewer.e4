@@ -175,13 +175,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.slf4j.api"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="edu.rice.cs.hpc.filter"
          download-size="0"
          install-size="0"
@@ -266,12 +259,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="org.eclipse.nebula.nattable"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
-   <plugin
          id="ca.odell.glazedlists"
          download-size="0"
          install-size="0"
@@ -294,6 +281,13 @@
 
    <plugin
          id="org.apache.commons.codec"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="org.slf4j.api"
          download-size="0"
          install-size="0"
          version="0.0.0"

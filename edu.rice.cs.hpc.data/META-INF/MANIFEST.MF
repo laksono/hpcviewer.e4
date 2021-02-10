@@ -4,7 +4,6 @@ Bundle-Name: hpcdata
 Bundle-SymbolicName: edu.rice.cs.hpc.data
 Bundle-Version: 6.0.0.qualifier
 Bundle-Vendor: Rice University
-Import-Package: org.apache.xerces.parsers
 Export-Package: edu.rice.cs.hpc.data.db,
  edu.rice.cs.hpc.data.db.version3,
  edu.rice.cs.hpc.data.experiment,
@@ -23,7 +22,8 @@ Export-Package: edu.rice.cs.hpc.data.db,
  edu.rice.cs.hpc.data.util,
  edu.rice.cs.hpc.data.util.string
 Main-Class: edu.rice.cs.hpc.data.framework.Application
-Require-Bundle: com.graphbuilder
+Require-Bundle: org.apache.xerces,
+ com.graphbuilder
 Automatic-Module-Name: edu.rice.cs.hpc.data
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .,
