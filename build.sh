@@ -29,6 +29,7 @@ rm -rf hpcviewer-${release}*
 echo "=================================="
 echo " Building the viewer"
 echo "=================================="
+cp releng/pom.4.16.xml releng/pom.xml 
 mvn clean package
 
 # The result should be:
