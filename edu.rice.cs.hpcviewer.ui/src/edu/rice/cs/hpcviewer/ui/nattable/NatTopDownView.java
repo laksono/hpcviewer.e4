@@ -13,7 +13,10 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.config.ConfigRegistry;
 import org.eclipse.nebula.widgets.nattable.config.DefaultNatTableStyleConfiguration;
+import org.eclipse.nebula.widgets.nattable.data.IColumnAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
+import org.eclipse.nebula.widgets.nattable.extension.glazedlists.GlazedListsEventLayer;
 import org.eclipse.nebula.widgets.nattable.extension.glazedlists.tree.GlazedListTreeData;
 import org.eclipse.nebula.widgets.nattable.extension.glazedlists.tree.GlazedListTreeRowModel;
 import org.eclipse.nebula.widgets.nattable.grid.data.DefaultCornerDataProvider;
@@ -142,16 +145,44 @@ public class NatTopDownView extends AbstractBaseViewItem
 		return null;
 	}
 	
+	static private class TreeColumnAccessor implements IColumnAccessor<Scope>
+	{
+		private final Experiment experiment;
+		
+		public TreeColumnAccessor(Experiment experiment ) {
+			this.experiment = experiment;
+		}
+
+		@Override
+		public Object getDataValue(Scope rowObject, int columnIndex) {
+			switch(columnIndex) {
+			case 0:
+				return rowObject.getName();
+			default:
+				if (columnIndex>0 && columnIndex <= experiment.getMetricCount()) {
+					BaseMetric metric = experiment.getMetric(columnIndex-1);
+					return metric.getMetricTextValue(rowObject);
+				}
+			}
+			return null;
+		}
+
+		@Override
+		public void setDataValue(Scope rowObject, int columnIndex, Object newValue) {}
+
+		@Override
+		public int getColumnCount() {
+			return 1 + experiment.getMetricCount();
+		}
+		
+	}
 	
 	static private class ScopeExpansionModel implements TreeList.ExpansionModel<Scope>
 	{
 
 		@Override
 		public boolean isExpanded(Scope element, List<Scope> path) {
-			if (element instanceof RootScope)
-				return true;
-			
-			return false;
+			return (element instanceof RootScope);
 		}
 
 		@Override
@@ -178,18 +209,27 @@ public class NatTopDownView extends AbstractBaseViewItem
             // use the SortedList constructor with 'null' for the Comparator
             // because the Comparator will be set by configuration
             SortedList<Scope> sortedList = new SortedList<>(rowObjectsGlazedList, null);
-            TreeList.Format<Scope> treeFormat = new TreeScopeFormat();
+            TreeList.Format<Scope> treeFormat = new TreeScopeFormat(root);
             
             // wrap the SortedList with the TreeList
             treeList = new TreeList<Scope>(sortedList, treeFormat, new ScopeExpansionModel());
 
+            // not used?
 			dataProvider = new TreeDataProvider(root);
-            selectionLayer = new SelectionLayer( new DataLayer(dataProvider) );
+
+            IDataProvider bodyDataProvider = new ListDataProvider<Scope>(this.treeList, 
+            									new TreeColumnAccessor((Experiment) experiment));
+            DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
+
+            // layer for event handling of GlazedLists and PropertyChanges
+            GlazedListsEventLayer<Scope> glazedListsEventLayer = new GlazedListsEventLayer<>(bodyDataLayer, this.treeList);
 
             GlazedListTreeData<Scope> treeData = new GlazedListTreeData<>(this.treeList);
             ITreeRowModel<Scope> treeRowModel = new GlazedListTreeRowModel<>(treeData);
-            treeLayer = new TreeLayer(this.selectionLayer, treeRowModel);
+
+            selectionLayer = new SelectionLayer( glazedListsEventLayer );
             
+            treeLayer = new TreeLayer(this.selectionLayer, treeRowModel);
             ViewportLayer viewportLayer = new ViewportLayer(this.treeLayer);
 
             setUnderlyingLayer(viewportLayer);
@@ -216,7 +256,12 @@ public class NatTopDownView extends AbstractBaseViewItem
 	static private class TreeScopeFormat implements TreeList.Format<Scope>
 	{
 		private Comparator<Scope> comparator;
+		private final RootScope root;
 
+		public TreeScopeFormat(RootScope root) {
+			this.root = root;
+		}
+		
 		public void setMetric(BaseMetric metric) {
 		}
 		
@@ -228,16 +273,26 @@ public class NatTopDownView extends AbstractBaseViewItem
 			path.add(element);
 			
 			Scope parent = element.getParentScope();
+			
+			if (parent instanceof RootScope) {
+				if ( ((RootScope)parent).getType() == RootScopeType.Invisible )
+					return;
+			}
 			while(parent != null) {
 				path.add(parent);
 				parent = parent.getParentScope();
+				if (parent instanceof RootScope) {
+					if ( ((RootScope)parent).getType() == RootScopeType.Invisible )
+						break;
+				}
 			}
+			
             Collections.reverse(path);
 		}
 
 		@Override
 		public boolean allowsChildren(Scope element) {
-			return element.hasChildren();
+			return true;
 		}
 
 		@Override
