@@ -215,10 +215,9 @@ public class NatTopDownView extends AbstractBaseViewItem
 	
 	static private class TreeScopeFormat implements TreeList.Format<Scope>
 	{
-		private ScopeComparator comparator;
+		private Comparator<Scope> comparator;
 
 		public void setMetric(BaseMetric metric) {
-			comparator.setMetric(metric);
 		}
 		
 		@Override
@@ -228,17 +227,10 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 			path.add(element);
 			
-			Scope current = element;
-			while(current != null && current.getParentScope() != null) {
-				Scope parent = current.getParentScope();
-				if (parent instanceof RootScope) {
-					if (((RootScope)parent).getType() == RootScopeType.Invisible) {
-						current = parent;
-						continue;
-					}
-				}
+			Scope parent = element.getParentScope();
+			while(parent != null) {
 				path.add(parent);
-				current = parent;
+				parent = parent.getParentScope();
 			}
             Collections.reverse(path);
 		}
@@ -251,7 +243,14 @@ public class NatTopDownView extends AbstractBaseViewItem
 		@Override
 		public Comparator<? super Scope> getComparator(int depth) {
 			if (comparator == null) {
-				comparator = new ScopeComparator();
+				comparator = new Comparator<Scope>() {
+
+					@Override
+					public int compare(Scope o1, Scope o2) {
+						
+						return o1.getName().compareTo(o2.getName());
+					}
+				};
 			}
 			return null;
 		}
