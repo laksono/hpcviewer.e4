@@ -130,49 +130,8 @@ public class NatTopDownView extends AbstractBaseViewItem
 		return root;
 	}
 	
-	static private class TreeColumnAccessor implements IColumnAccessor<Scope>
-	{
-		private final List<BaseMetric> metrics;
-		
-		public TreeColumnAccessor(List<BaseMetric> metrics) {
-			this.metrics = metrics;
-		}
-
-		@Override
-		public Object getDataValue(Scope rowObject, int columnIndex) {
-			switch(columnIndex) {
-			case 0:
-				return rowObject.getName();
-			default:
-				if (columnIndex>0 && columnIndex <= metrics.size()) {
-					BaseMetric metric = metrics.get(columnIndex-1);
-					return metric.getMetricTextValue(rowObject);
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public void setDataValue(Scope rowObject, int columnIndex, Object newValue) {}
-
-		@Override
-		public int getColumnCount() {
-			return 1 + metrics.size();
-		}
-		
-	}
 	
-	static private class ScopeExpansionModel implements TreeList.ExpansionModel<Scope>
-	{
 
-		@Override
-		public boolean isExpanded(Scope element, List<Scope> path) {
-			return (element instanceof RootScope);
-		}
-
-		@Override
-		public void setExpanded(Scope element, List<Scope> path, boolean expanded) {}
-	}
 	
 	static private class BodyLayerTopDown extends AbstractLayerTransform 
 	{
@@ -219,34 +178,5 @@ public class NatTopDownView extends AbstractBaseViewItem
         public SelectionLayer getSelectionLayer() {
             return this.selectionLayer;
         }
-	}
-	
-	
-	
-	static private class TreeRowHeaderDataProvider implements IDataProvider
-	{
-		private final Experiment experiment;
-		
-		public TreeRowHeaderDataProvider(Experiment experiment) {
-			this.experiment = experiment;
-		}
-		@Override
-		public Object getDataValue(int columnIndex, int rowIndex) {
-			return Integer.valueOf(rowIndex+1);
-		}
-
-		@Override
-		public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 1;
-		}
-
-		@Override
-		public int getRowCount() {
-			return experiment.getListOfScopes().size();
-		}
-	}
+	}	
 }
