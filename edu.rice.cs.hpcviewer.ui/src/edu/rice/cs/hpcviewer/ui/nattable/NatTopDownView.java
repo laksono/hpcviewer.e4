@@ -1,8 +1,6 @@
 package edu.rice.cs.hpcviewer.ui.nattable;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.e4.core.services.events.IEventBroker;
@@ -45,9 +43,7 @@ import ca.odell.glazedlists.TreeList;
 import edu.rice.cs.hpc.data.experiment.BaseExperiment;
 import edu.rice.cs.hpc.data.experiment.Experiment;
 import edu.rice.cs.hpc.data.experiment.metric.BaseMetric;
-import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
-import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
 import edu.rice.cs.hpcviewer.ui.addon.DatabaseCollection;
@@ -59,7 +55,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 	
 	private NatTable natTable;
 	private Composite container;
-
+	private RootScope root;
 	
 	public NatTopDownView(CTabFolder parent, int style) {
 		super(parent, style);
@@ -85,7 +81,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 	@Override
 	public void setInput(Object input) {
-		RootScope root = (RootScope) input;
+		root = (RootScope) input;
 		
 		List<BaseMetric> metrics   = ((Experiment)root.getExperiment()).getVisibleMetrics();
 
@@ -131,7 +127,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 	@Override
 	public Object getInput() {
-		return null;
+		return root;
 	}
 	
 	static private class TreeColumnAccessor implements IColumnAccessor<Scope>
@@ -202,8 +198,6 @@ public class NatTopDownView extends AbstractBaseViewItem
             // wrap the SortedList with the TreeList
             treeList = new TreeList<Scope>(sortedList, treeFormat, new ScopeExpansionModel());
 
-            new TreeDataProvider(root);
-
             IDataProvider bodyDataProvider = new ListDataProvider<Scope>(this.treeList, 
             									new TreeColumnAccessor(metrics));
             DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
@@ -228,155 +222,6 @@ public class NatTopDownView extends AbstractBaseViewItem
 	}
 	
 	
-	static private class TreeScopeFormat implements TreeList.Format<Scope>
-	{
-		private Comparator<Scope> comparator;
-		public TreeScopeFormat(RootScope root) {
-		}
-		
-		@Override
-		public void getPath(List<Scope> path, Scope element) {
-			if (element == null)
-				return;
-
-			path.add(element);
-			
-			Scope parent = element.getParentScope();
-			
-			if (parent instanceof RootScope) {
-				if ( ((RootScope)parent).getType() == RootScopeType.Invisible )
-					return;
-			}
-			while(parent != null) {
-				path.add(parent);
-				parent = parent.getParentScope();
-				if (parent instanceof RootScope) {
-					if ( ((RootScope)parent).getType() == RootScopeType.Invisible )
-						break;
-				}
-			}
-			
-            Collections.reverse(path);
-		}
-
-		@Override
-		public boolean allowsChildren(Scope element) {
-			return true;
-		}
-
-		@Override
-		public Comparator<? super Scope> getComparator(int depth) {
-			if (comparator == null) {
-				comparator = new Comparator<Scope>() {
-
-					@Override
-					public int compare(Scope o1, Scope o2) {
-						
-						return o1.getName().compareTo(o2.getName());
-					}
-				};
-			}
-			return null;
-		}
-		
-	}
-	
-	static private class TreeDataProvider implements IDataProvider
-	{
-		private final RootScope root;
-		private final List<BaseMetric> metrics;
-		
-		public TreeDataProvider(RootScope root) {
-			this.root = root;
-			metrics = ((Experiment)root.getExperiment()).getVisibleMetrics();
-		}
-		
-		@Override
-		public Object getDataValue(int columnIndex, int rowIndex) {
-			Experiment experiment = (Experiment) root.getExperiment();
-			Scope scope = experiment.getListOfScopes().get(rowIndex);
-			if (columnIndex == 0)
-				return scope;
-			if (scope == null)
-				return null;
-			BaseMetric metric = metrics.get(columnIndex-1);
-			MetricValue mv = scope.getMetricValue(metric);
-			return mv;
-		}
-
-		@Override
-		public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
-			if (columnIndex == 0)
-				return;
-			Experiment experiment = (Experiment) root.getExperiment();
-			Scope scope = experiment.getListOfScopes().get(rowIndex);
-			if (scope == null)
-				return;
-			
-			BaseMetric metric = metrics.get(columnIndex-1);
-			scope.setMetricValue(metric.getIndex(), (MetricValue)newValue);
-		}
-
-		@Override
-		public int getColumnCount() {
-			return 1+metrics.size();
-		}
-
-		@Override
-		public int getRowCount() {
-			Experiment experiment = (Experiment) root.getExperiment();
-			return experiment.getListOfScopes().size();
-		}
-		
-	}
-	
-	/******
-	 * 
-	 * Data provider for table columns, which consists of:
-	 * 0: tree column
-	 * 1-N: metric columns, where N is number of metrics.
-	 *
-	 */
-	static private class ColumnDataProvider implements IDataProvider
-	{
-		private final List<BaseMetric> metrics;
-		
-		public ColumnDataProvider(List<BaseMetric> metrics) {
-			this.metrics = metrics;
-		}
-
-		@Override
-		public Object getDataValue(int columnIndex, int rowIndex) {
-
-			if (columnIndex < 0 && columnIndex > getColumnCount())
-				return null;
-			
-			if (columnIndex == 0)
-				return "Scope";
-
-			if (metrics == null)
-				return null;
-
-			return metrics.get(columnIndex-1);
-		}
-
-		@Override
-		public void setDataValue(int columnIndex, int rowIndex, Object newValue) {
-			if (columnIndex>metrics.size()) {
-				metrics.add((BaseMetric) newValue);
-			}
-		}
-
-		@Override
-		public int getColumnCount() {
-			return metrics.size()+1;
-		}
-
-		@Override
-		public int getRowCount() {
-			return 1;
-		}
-	}
 	
 	static private class TreeRowHeaderDataProvider implements IDataProvider
 	{
