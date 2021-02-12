@@ -29,7 +29,6 @@ import org.eclipse.nebula.widgets.nattable.grid.layer.RowHeaderLayer;
 import org.eclipse.nebula.widgets.nattable.layer.AbstractLayerTransform;
 import org.eclipse.nebula.widgets.nattable.layer.DataLayer;
 import org.eclipse.nebula.widgets.nattable.layer.ILayer;
-import org.eclipse.nebula.widgets.nattable.layer.IUniqueIndexLayer;
 import org.eclipse.nebula.widgets.nattable.selection.SelectionLayer;
 import org.eclipse.nebula.widgets.nattable.tree.ITreeRowModel;
 import org.eclipse.nebula.widgets.nattable.tree.TreeLayer;
@@ -50,7 +49,6 @@ import edu.rice.cs.hpc.data.experiment.metric.MetricValue;
 import edu.rice.cs.hpc.data.experiment.scope.RootScope;
 import edu.rice.cs.hpc.data.experiment.scope.RootScopeType;
 import edu.rice.cs.hpc.data.experiment.scope.Scope;
-import edu.rice.cs.hpc.data.util.ScopeComparator;
 import edu.rice.cs.hpcviewer.ui.ProfilePart;
 import edu.rice.cs.hpcviewer.ui.addon.DatabaseCollection;
 import edu.rice.cs.hpcviewer.ui.tabItems.AbstractBaseViewItem;
@@ -58,12 +56,6 @@ import edu.rice.cs.hpcviewer.ui.tabItems.AbstractBaseViewItem;
 public class NatTopDownView extends AbstractBaseViewItem 
 {
 	private final static String TITLE_TOP_DOWN = "Top-down view";
-	
-	private EPartService  partService;	
-	private IEventBroker  eventBroker;
-	private EMenuService  menuService;
-	private DatabaseCollection database;
-	private ProfilePart   profilePart;
 	
 	private NatTable natTable;
 	private Composite container;
@@ -83,12 +75,6 @@ public class NatTopDownView extends AbstractBaseViewItem
 	@Override
 	public void setService(EPartService partService, IEventBroker broker, DatabaseCollection database,
 			ProfilePart profilePart, EMenuService menuService) {
-		
-		this.partService = partService;
-		this.eventBroker = broker;
-		this.database    = database;
-		this.profilePart = profilePart;
-		this.menuService = menuService;
 	}
 
 	@Override
@@ -100,10 +86,13 @@ public class NatTopDownView extends AbstractBaseViewItem
 	@Override
 	public void setInput(Object input) {
 		RootScope root = (RootScope) input;
-		BodyLayerTopDown bodyLayer = new BodyLayerTopDown(root);
+		
+		List<BaseMetric> metrics   = ((Experiment)root.getExperiment()).getVisibleMetrics();
+
+		BodyLayerTopDown bodyLayer = new BodyLayerTopDown(root, metrics);
 		
         // build the column header layer
-        IDataProvider columnHeaderDataProvider = new ColumnDataProvider((Experiment) root.getExperiment());
+        IDataProvider columnHeaderDataProvider = new ColumnDataProvider(metrics);
         DataLayer columnDataHeaderLayer = new DefaultColumnHeaderDataLayer(columnHeaderDataProvider);
         ILayer columnHeaderLayer     = new ColumnHeaderLayer(columnDataHeaderLayer, bodyLayer, bodyLayer.getSelectionLayer());
 		
@@ -147,10 +136,10 @@ public class NatTopDownView extends AbstractBaseViewItem
 	
 	static private class TreeColumnAccessor implements IColumnAccessor<Scope>
 	{
-		private final Experiment experiment;
+		private final List<BaseMetric> metrics;
 		
-		public TreeColumnAccessor(Experiment experiment ) {
-			this.experiment = experiment;
+		public TreeColumnAccessor(List<BaseMetric> metrics) {
+			this.metrics = metrics;
 		}
 
 		@Override
@@ -159,8 +148,8 @@ public class NatTopDownView extends AbstractBaseViewItem
 			case 0:
 				return rowObject.getName();
 			default:
-				if (columnIndex>0 && columnIndex <= experiment.getMetricCount()) {
-					BaseMetric metric = experiment.getMetric(columnIndex-1);
+				if (columnIndex>0 && columnIndex <= metrics.size()) {
+					BaseMetric metric = metrics.get(columnIndex-1);
 					return metric.getMetricTextValue(rowObject);
 				}
 			}
@@ -172,7 +161,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 		@Override
 		public int getColumnCount() {
-			return 1 + experiment.getMetricCount();
+			return 1 + metrics.size();
 		}
 		
 	}
@@ -192,11 +181,10 @@ public class NatTopDownView extends AbstractBaseViewItem
 	static private class BodyLayerTopDown extends AbstractLayerTransform 
 	{
         private final SelectionLayer selectionLayer;
-        private final IDataProvider dataProvider;
         private final TreeList<Scope> treeList;
         private final TreeLayer treeLayer;
 
-		public BodyLayerTopDown(RootScope root) {
+		public BodyLayerTopDown(RootScope root, List<BaseMetric> metrics) {
 			
             // wrapping of the list to show into GlazedLists
             // see http://publicobject.com/glazedlists/ for further information
@@ -214,11 +202,10 @@ public class NatTopDownView extends AbstractBaseViewItem
             // wrap the SortedList with the TreeList
             treeList = new TreeList<Scope>(sortedList, treeFormat, new ScopeExpansionModel());
 
-            // not used?
-			dataProvider = new TreeDataProvider(root);
+            new TreeDataProvider(root);
 
             IDataProvider bodyDataProvider = new ListDataProvider<Scope>(this.treeList, 
-            									new TreeColumnAccessor((Experiment) experiment));
+            									new TreeColumnAccessor(metrics));
             DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
 
             // layer for event handling of GlazedLists and PropertyChanges
@@ -235,20 +222,8 @@ public class NatTopDownView extends AbstractBaseViewItem
             setUnderlyingLayer(viewportLayer);
 		}
 
-        public IUniqueIndexLayer getTreeLayer() {
-			return treeLayer;
-		}
-
-		public SelectionLayer getSelectionLayer() {
+        public SelectionLayer getSelectionLayer() {
             return this.selectionLayer;
-        }
-
-        public IDataProvider getBodyDataProvider() {
-            return this.dataProvider;
-        }
-
-        public TreeList<Scope> getTreeList() {
-            return this.treeList;
         }
 	}
 	
@@ -256,13 +231,7 @@ public class NatTopDownView extends AbstractBaseViewItem
 	static private class TreeScopeFormat implements TreeList.Format<Scope>
 	{
 		private Comparator<Scope> comparator;
-		private final RootScope root;
-
 		public TreeScopeFormat(RootScope root) {
-			this.root = root;
-		}
-		
-		public void setMetric(BaseMetric metric) {
 		}
 		
 		@Override
@@ -372,8 +341,8 @@ public class NatTopDownView extends AbstractBaseViewItem
 	{
 		private final List<BaseMetric> metrics;
 		
-		public ColumnDataProvider(Experiment experiment) {
-			metrics = experiment.getVisibleMetrics();
+		public ColumnDataProvider(List<BaseMetric> metrics) {
+			this.metrics = metrics;
 		}
 
 		@Override
