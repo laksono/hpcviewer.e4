@@ -1,5 +1,6 @@
 package edu.rice.cs.hpcviewer.ui.nattable;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -11,8 +12,9 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.nebula.widgets.nattable.NatTable;
 import org.eclipse.nebula.widgets.nattable.config.ConfigRegistry;
 import org.eclipse.nebula.widgets.nattable.config.DefaultNatTableStyleConfiguration;
-import org.eclipse.nebula.widgets.nattable.data.IColumnAccessor;
 import org.eclipse.nebula.widgets.nattable.data.IDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.IRowDataProvider;
+import org.eclipse.nebula.widgets.nattable.data.IRowIdAccessor;
 import org.eclipse.nebula.widgets.nattable.data.ListDataProvider;
 import org.eclipse.nebula.widgets.nattable.extension.glazedlists.GlazedListsEventLayer;
 import org.eclipse.nebula.widgets.nattable.extension.glazedlists.tree.GlazedListTreeData;
@@ -27,6 +29,8 @@ import org.eclipse.nebula.widgets.nattable.grid.layer.RowHeaderLayer;
 import org.eclipse.nebula.widgets.nattable.layer.AbstractLayerTransform;
 import org.eclipse.nebula.widgets.nattable.layer.DataLayer;
 import org.eclipse.nebula.widgets.nattable.layer.ILayer;
+import org.eclipse.nebula.widgets.nattable.painter.layer.NatGridLayerPainter;
+import org.eclipse.nebula.widgets.nattable.selection.RowSelectionModel;
 import org.eclipse.nebula.widgets.nattable.selection.SelectionLayer;
 import org.eclipse.nebula.widgets.nattable.tree.ITreeRowModel;
 import org.eclipse.nebula.widgets.nattable.tree.TreeLayer;
@@ -104,8 +108,10 @@ public class NatTopDownView extends AbstractBaseViewItem
 
 		GridLayer gridLayer = new GridLayer(bodyLayer, columnHeaderLayer, rowHeaderLayer, cornerLayer);
 		
-		natTable = new NatTable(container, gridLayer, false);
-		
+		natTable = new NatTable(container, SWT.NO_REDRAW_RESIZE | SWT.DOUBLE_BUFFERED | SWT.BORDER, gridLayer, false);
+
+        natTable.setLayerPainter(
+                new NatGridLayerPainter(natTable, DataLayer.DEFAULT_ROW_HEIGHT));		
 
         // create a new ConfigRegistry which will be needed for GlazedLists
         // handling
@@ -157,7 +163,7 @@ public class NatTopDownView extends AbstractBaseViewItem
             // wrap the SortedList with the TreeList
             treeList = new TreeList<Scope>(sortedList, treeFormat, new ScopeExpansionModel());
 
-            IDataProvider bodyDataProvider = new ListDataProvider<Scope>(this.treeList, 
+            IRowDataProvider<Scope> bodyDataProvider = new ListDataProvider<Scope>(this.treeList, 
             									new TreeColumnAccessor(metrics));
             DataLayer bodyDataLayer = new DataLayer(bodyDataProvider);
 
@@ -168,6 +174,13 @@ public class NatTopDownView extends AbstractBaseViewItem
             ITreeRowModel<Scope> treeRowModel = new GlazedListTreeRowModel<>(treeData);
 
             selectionLayer = new SelectionLayer( glazedListsEventLayer );
+            selectionLayer.setSelectionModel(new RowSelectionModel<Scope>( getSelectionLayer(), bodyDataProvider,  new IRowIdAccessor<Scope>() {
+
+				@Override
+				public Serializable getRowId(Scope rowObject) {
+					return rowObject.getCCTIndex();
+				}
+			}));
             
             treeLayer = new TreeLayer(this.selectionLayer, treeRowModel);
             ViewportLayer viewportLayer = new ViewportLayer(this.treeLayer);

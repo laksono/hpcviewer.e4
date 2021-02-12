@@ -3,6 +3,7 @@ package edu.rice.cs.hpcviewer.ui.dialogs;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -199,23 +200,34 @@ public class InfoDialog extends Dialog
 			String version = ApplicationProperty.getVersion();
 			mapTableItems.put("Version: ", version.trim());
 
+			String locHome  = Platform.getUserLocation().toString();
 			String location = ViewerPreferenceManager.INSTANCE.getPreferenceStoreLocation();
 			String locInstall = Platform.getInstallLocation().getURL().getFile();
 			String locInstance = Platform.getInstanceLocation().getURL().getFile();
-			String locUser = Platform.getLogFileLocation().toOSString(); //.getUserLocation().getURL().getFile();
+			String locUser   = Platform.getLogFileLocation().toOSString(); //.getUserLocation().getURL().getFile();
+			String locConfig = Platform.getConfigurationLocation().toString();
+
 			List<String> logUser = LogProperty.getLogFile();
 
 			mapTableItems.put("hpcviewer Properties", null);
+			mapTableItems.put("User location", 		locHome);
 			mapTableItems.put("Install directory",  locInstall);
 			mapTableItems.put("Instance directory", locInstance);
 			mapTableItems.put("User log files",     logUser.toString());
 			mapTableItems.put("Eclipse log user",   locUser);
 			mapTableItems.put("Preference file",    location);
+			mapTableItems.put("Configuration dir",  locConfig);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		mapTableItems.put("OS", 			Platform.getOS());
+		mapTableItems.put("Arch", 			Platform.getOSArch());
+		mapTableItems.put("Args", 			Arrays.toString(Platform.getCommandLineArgs()));
+		mapTableItems.put("Window system",  Platform.getWS());
 
+		mapTableItems.put("Dark theme", Display.isSystemDarkTheme() ? "Yes" : "No");
+		
 		int procs = Runtime.getRuntime().availableProcessors();
 		mapTableItems.put("Number of processors", String.valueOf(procs));
 
@@ -223,9 +235,9 @@ public class InfoDialog extends Dialog
 		long memFree = Runtime.getRuntime().freeMemory();
 		long memTot  = Runtime.getRuntime().totalMemory();
 		
-		mapTableItems.put("Max memory",   String.valueOf(memMax));
-		mapTableItems.put("Free memory",  String.valueOf(memFree));
-		mapTableItems.put("Total memory", String.valueOf(memTot));
+		mapTableItems.put("Max JVM memory (bytes)",   String.valueOf(memMax));
+		mapTableItems.put("Free memory (bytes)",  String.valueOf(memFree));
+		mapTableItems.put("Total available memory (bytes)", String.valueOf(memTot));
 		
 		mapTableItems.put("Java Properties", null);
 		Properties properties = System.getProperties();
